@@ -1,14 +1,14 @@
 const CACHE_NAME = 'hangulnara-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/js/content.js',
-  '/js/canvas.js',
-  '/js/strokes.js',
-  '/js/storage.js',
-  '/manifest.json',
+  './',
+  './index.html',
+  './css/style.css',
+  './js/app.js',
+  './js/content.js',
+  './js/canvas.js',
+  './js/strokes.js',
+  './js/storage.js',
+  './manifest.json',
 ];
 
 self.addEventListener('install', e => {

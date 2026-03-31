@@ -2,7 +2,7 @@
   "name": "한글나라",
   "short_name": "한글나라",
   "description": "재미있게 한글을 배워요!",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#FFF8F0",
