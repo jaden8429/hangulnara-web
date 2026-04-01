@@ -177,6 +177,9 @@ function startLesson(lessonId) {
 }
 
 function showLearningItem() {
+  // 이전 단계의 캔버스/애니메이터 정리
+  if (writingCanvas) { writingCanvas.destroy(); writingCanvas = null; }
+  if (currentAnimator) { currentAnimator.stop(); currentAnimator = null; }
   currentStage = 'LISTEN';
   traceRetry = 0;
   freeRetry = 0;
@@ -330,6 +333,8 @@ function showAutoIndicator(show) {
 
 // === TRACE 단계: 따라쓰기 (가이드 보이는 상태에서 작성 → 자동 평가) ===
 function renderTrace(el, item) {
+  // 이전 캔버스 반드시 파기 (타이머/리스너 정리)
+  if (writingCanvas) { writingCanvas.destroy(); writingCanvas = null; }
   var c = createCanvasHtml();
   var emojiHint = item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
 
@@ -407,6 +412,8 @@ function autoEvalTrace() {
 
 // === FREE 단계: 혼자쓰기 (가이드 없이 → 자동 평가) ===
 function renderFree(el, item) {
+  // 이전 캔버스 반드시 파기 (타이머/리스너 정리)
+  if (writingCanvas) { writingCanvas.destroy(); writingCanvas = null; }
   var c = createCanvasHtml();
   var emojiHint = item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
 

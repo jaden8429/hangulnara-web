@@ -22,17 +22,28 @@ class WritingCanvas {
   _bindEvents() {
     var self = this;
     var c = this.canvas;
-    // 모든 입력 방식 지원: 포인터 + 마우스 + 터치
-    // 포인터 이벤트 (최신 브라우저, S Pen)
+
+    // --- 포인터 이벤트 (최신 브라우저, S Pen) ---
     c.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); self._start(e); }, false);
-    c.addEventListener('pointermove', function(e){ e.preventDefault(); self._move(e); }, false);
+    c.addEventListener('pointermove', function(e){ if(self._pointerActive) { e.preventDefault(); self._move(e); } }, false);
     c.addEventListener('pointerup', function(e){ e.preventDefault(); self._end(e); }, false);
     c.addEventListener('pointercancel', function(e){ self._end(e); }, false);
-    // 마우스 이벤트 (PC fallback)
+    c.addEventListener('pointerleave', function(e){ if(self._pointerActive) self._end(e); }, false);
+
+    // --- 마우스 이벤트 (PC fallback) ---
     c.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); self._startMouse(e); }, false);
-    c.addEventListener('mousemove', function(e){ self._moveMouse(e); }, false);
-    c.addEventListener('mouseup', function(e){ self._endMouse(e); }, false);
-    // 터치 이벤트 (모바일 fallback)
+
+    // document 레벨 mousemove/mouseup — 캔버스 밖에서 놓아도 감지
+    self._docMouseMove = function(e){ self._moveMouse(e); };
+    self._docMouseUp = function(e){ self._endMouse(e); };
+    document.addEventListener('mousemove', self._docMouseMove, false);
+    document.addEventListener('mouseup', self._docMouseUp, false);
+
+    // --- document 레벨 pointerup fallback (캔버스 밖 릴리즈 안전망) ---
+    self._docPointerUp = function(e){ if(self._pointerActive) self._end(e); };
+    document.addEventListener('pointerup', self._docPointerUp, false);
+
+    // --- 터치 이벤트 (모바일 fallback) ---
     c.addEventListener('touchstart', function(e){ e.preventDefault(); if(e.touches.length===1) self._start(e.touches[0]); }, { passive: false });
     c.addEventListener('touchmove', function(e){ e.preventDefault(); if(e.touches.length===1) self._move(e.touches[0]); }, { passive: false });
     c.addEventListener('touchend', function(e){ e.preventDefault(); self._end(e.changedTouches?e.changedTouches[0]:e); }, { passive: false });
@@ -103,8 +114,15 @@ class WritingCanvas {
     this._cancelAutoTimer();
     this._locked = true;
     this._destroyed = true;
+    this._pointerActive = false;
+    this._mouseActive = false;
+    this.currentStroke = null;
     this.onAutoEvaluate = null;
     this.onStrokeEnd = null;
+    // document 레벨 리스너 제거
+    if (this._docMouseMove) document.removeEventListener('mousemove', this._docMouseMove, false);
+    if (this._docMouseUp) document.removeEventListener('mouseup', this._docMouseUp, false);
+    if (this._docPointerUp) document.removeEventListener('pointerup', this._docPointerUp, false);
   }
 
   _startAutoTimer() {

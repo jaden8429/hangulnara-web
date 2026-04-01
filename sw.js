@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hangulnara-v1';
+const CACHE_NAME = 'hangulnara-v2';
 const ASSETS = [
   './',
   './index.html',
