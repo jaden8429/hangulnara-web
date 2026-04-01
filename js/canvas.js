@@ -169,6 +169,8 @@ class WritingCanvas {
     var allStrokes = this.strokes.slice();
     if (this.currentStroke) allStrokes.push(this.currentStroke);
 
+    var penColor = this.penColor;
+    var penWidth = this.penWidth;
     allStrokes.forEach(function(stroke) {
       if (stroke.length < 2) return;
       ctx.beginPath();
@@ -180,8 +182,8 @@ class WritingCanvas {
         var my = (prev.y + curr.y) / 2;
         ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
       }
-      ctx.strokeStyle = this.penColor;
-      ctx.lineWidth = this.penWidth * (stroke[stroke.length - 1].pressure * 1.5 + 0.5);
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penWidth * (stroke[stroke.length - 1].pressure * 1.5 + 0.5);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
