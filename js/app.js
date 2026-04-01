@@ -61,7 +61,7 @@ setTimeout(function() {
   document.getElementById('homeStars').textContent = getTotalStars();
   // 홈 인사말 업데이트
   var bubble = document.getElementById('homeBubble');
-  if (bubble) bubble.textContent = HOME_GREETINGS[Math.random() * HOME_GREETINGS.length | 0];
+  if (bubble) bubble.textContent = getHomeGreeting();
 }, 2000);
 
 var HOME_GREETINGS = [
@@ -545,6 +545,7 @@ function showStarBurst() {
 
 // === 복습 ===
 function goReview() {
+  document.getElementById('reviewTitle').textContent = '복습하기';
   var items = getFailedItems();
   var el = document.getElementById('reviewContent');
   if (items.length === 0) {
@@ -575,6 +576,7 @@ function startReviewItem(item) {
 
 // === 테마별 학습 ===
 function goThemes() {
+  document.getElementById('reviewTitle').textContent = '🎨 테마학습';
   var el = document.getElementById('reviewContent');
   var html = '<div style="font-size:22px;font-weight:bold;margin-bottom:16px">🎨 테마별 글자 연습</div>';
   html += '<div style="display:flex;flex-wrap:wrap;gap:16px">';

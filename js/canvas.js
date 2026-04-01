@@ -180,8 +180,8 @@ class WritingCanvas {
         var my = (prev.y + curr.y) / 2;
         ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
       }
-      ctx.strokeStyle = '#333333';
-      ctx.lineWidth = 5 * (stroke[stroke.length - 1].pressure * 1.5 + 0.5);
+      ctx.strokeStyle = this.penColor;
+      ctx.lineWidth = this.penWidth * (stroke[stroke.length - 1].pressure * 1.5 + 0.5);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
