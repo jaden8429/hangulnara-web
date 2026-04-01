@@ -25,24 +25,24 @@ const LESSONS = {
     { id:'prep_sp', char:'🌀', name:'나선', type:'PREP', tts:'빙글빙글 그려보자' },
   ]},
   consonant_set_1: { title:'ㄱ ㄴ ㄷ ㄹ ㅁ', threshold:4, items:[
-    { id:'c_g', char:'ㄱ', name:'기역', type:'CHAR', tts:'기역', word:'기차' },
-    { id:'c_n', char:'ㄴ', name:'니은', type:'CHAR', tts:'니은', word:'나비' },
-    { id:'c_d', char:'ㄷ', name:'디귿', type:'CHAR', tts:'디귿', word:'다리' },
-    { id:'c_r', char:'ㄹ', name:'리을', type:'CHAR', tts:'리을', word:'라면' },
-    { id:'c_m', char:'ㅁ', name:'미음', type:'CHAR', tts:'미음', word:'모자' },
+    { id:'c_g', char:'ㄱ', name:'기역', type:'CHAR', tts:'기역', word:'기차', emoji:'🚂' },
+    { id:'c_n', char:'ㄴ', name:'니은', type:'CHAR', tts:'니은', word:'나비', emoji:'🦋' },
+    { id:'c_d', char:'ㄷ', name:'디귿', type:'CHAR', tts:'디귿', word:'다리', emoji:'🌉' },
+    { id:'c_r', char:'ㄹ', name:'리을', type:'CHAR', tts:'리을', word:'라면', emoji:'🍜' },
+    { id:'c_m', char:'ㅁ', name:'미음', type:'CHAR', tts:'미음', word:'모자', emoji:'🧢' },
   ]},
   consonant_set_2: { title:'ㅂ ㅅ ㅇ ㅈ ㅊ', threshold:4, items:[
-    { id:'c_b', char:'ㅂ', name:'비읍', type:'CHAR', tts:'비읍', word:'바다' },
-    { id:'c_s', char:'ㅅ', name:'시옷', type:'CHAR', tts:'시옷', word:'사자' },
-    { id:'c_ng', char:'ㅇ', name:'이응', type:'CHAR', tts:'이응', word:'오리' },
-    { id:'c_j', char:'ㅈ', name:'지읒', type:'CHAR', tts:'지읒', word:'자동차' },
-    { id:'c_ch', char:'ㅊ', name:'치읓', type:'CHAR', tts:'치읓', word:'치마' },
+    { id:'c_b', char:'ㅂ', name:'비읍', type:'CHAR', tts:'비읍', word:'바다', emoji:'🌊' },
+    { id:'c_s', char:'ㅅ', name:'시옷', type:'CHAR', tts:'시옷', word:'사자', emoji:'🦁' },
+    { id:'c_ng', char:'ㅇ', name:'이응', type:'CHAR', tts:'이응', word:'오리', emoji:'🦆' },
+    { id:'c_j', char:'ㅈ', name:'지읒', type:'CHAR', tts:'지읒', word:'자동차', emoji:'🚗' },
+    { id:'c_ch', char:'ㅊ', name:'치읓', type:'CHAR', tts:'치읓', word:'치마', emoji:'👗' },
   ]},
   consonant_set_3: { title:'ㅋ ㅌ ㅍ ㅎ', threshold:3, items:[
-    { id:'c_k', char:'ㅋ', name:'키읔', type:'CHAR', tts:'키읔', word:'코' },
-    { id:'c_t', char:'ㅌ', name:'티읕', type:'CHAR', tts:'티읕', word:'토끼' },
-    { id:'c_p', char:'ㅍ', name:'피읖', type:'CHAR', tts:'피읖', word:'포도' },
-    { id:'c_h', char:'ㅎ', name:'히읗', type:'CHAR', tts:'히읗', word:'하마' },
+    { id:'c_k', char:'ㅋ', name:'키읔', type:'CHAR', tts:'키읔', word:'코', emoji:'👃' },
+    { id:'c_t', char:'ㅌ', name:'티읕', type:'CHAR', tts:'티읕', word:'토끼', emoji:'🐰' },
+    { id:'c_p', char:'ㅍ', name:'피읖', type:'CHAR', tts:'피읖', word:'포도', emoji:'🍇' },
+    { id:'c_h', char:'ㅎ', name:'히읗', type:'CHAR', tts:'히읗', word:'하마', emoji:'🦛' },
   ]},
   vowel_set_1: { title:'ㅏ ㅑ ㅓ ㅕ ㅗ', threshold:4, items:[
     { id:'v_a', char:'ㅏ', name:'아', type:'CHAR', tts:'아' },
@@ -80,49 +80,49 @@ const LESSONS = {
   ]},
 };
 
-// 테마별 단어 (stage2 이후 확장)
+// 테마별 단어 (emoji로 그림 표현)
 var WORD_THEMES = {
-  animals: { title: '\uD83D\uDC3E 동물 친구들', words: [
-    {id:'w_gae', char:'개', name:'개', type:'CHAR', tts:'개'},
-    {id:'w_so', char:'소', name:'소', type:'CHAR', tts:'소'},
-    {id:'w_mal', char:'말', name:'말', type:'CHAR', tts:'말'},
-    {id:'w_sae', char:'새', name:'새', type:'CHAR', tts:'새'},
-    {id:'w_gom', char:'곰', name:'곰', type:'CHAR', tts:'곰'},
+  animals: { title: '🐾 동물 친구들', words: [
+    {id:'w_gae', char:'개', name:'개', type:'CHAR', tts:'개', emoji:'🐕'},
+    {id:'w_so', char:'소', name:'소', type:'CHAR', tts:'소', emoji:'🐄'},
+    {id:'w_mal', char:'말', name:'말', type:'CHAR', tts:'말', emoji:'🐴'},
+    {id:'w_sae', char:'새', name:'새', type:'CHAR', tts:'새', emoji:'🐦'},
+    {id:'w_gom', char:'곰', name:'곰', type:'CHAR', tts:'곰', emoji:'🐻'},
   ]},
-  food: { title: '\uD83C\uDF4E 맛있는 음식', words: [
-    {id:'w_bap', char:'밥', name:'밥', type:'CHAR', tts:'밥'},
-    {id:'w_guk', char:'국', name:'국', type:'CHAR', tts:'국'},
-    {id:'w_tteok', char:'떡', name:'떡', type:'CHAR', tts:'떡'},
-    {id:'w_gam', char:'감', name:'감', type:'CHAR', tts:'감'},
-    {id:'w_kong', char:'콩', name:'콩', type:'CHAR', tts:'콩'},
+  food: { title: '🍎 맛있는 음식', words: [
+    {id:'w_bap', char:'밥', name:'밥', type:'CHAR', tts:'밥', emoji:'🍚'},
+    {id:'w_guk', char:'국', name:'국', type:'CHAR', tts:'국', emoji:'🍲'},
+    {id:'w_tteok', char:'떡', name:'떡', type:'CHAR', tts:'떡', emoji:'🍡'},
+    {id:'w_gam', char:'감', name:'감', type:'CHAR', tts:'감', emoji:'🍊'},
+    {id:'w_kong', char:'콩', name:'콩', type:'CHAR', tts:'콩', emoji:'🫘'},
   ]},
-  nature: { title: '\uD83C\uDF33 자연 속으로', words: [
-    {id:'w_san', char:'산', name:'산', type:'CHAR', tts:'산'},
-    {id:'w_mul', char:'물', name:'물', type:'CHAR', tts:'물'},
-    {id:'w_kkot', char:'꽃', name:'꽃', type:'CHAR', tts:'꽃'},
-    {id:'w_dal', char:'달', name:'달', type:'CHAR', tts:'달'},
-    {id:'w_byeol', char:'별', name:'별', type:'CHAR', tts:'별'},
+  nature: { title: '🌳 자연 속으로', words: [
+    {id:'w_san', char:'산', name:'산', type:'CHAR', tts:'산', emoji:'⛰️'},
+    {id:'w_mul', char:'물', name:'물', type:'CHAR', tts:'물', emoji:'💧'},
+    {id:'w_kkot', char:'꽃', name:'꽃', type:'CHAR', tts:'꽃', emoji:'🌸'},
+    {id:'w_dal', char:'달', name:'달', type:'CHAR', tts:'달', emoji:'🌙'},
+    {id:'w_byeol', char:'별', name:'별', type:'CHAR', tts:'별', emoji:'⭐'},
   ]},
-  body: { title: '\u270B 우리 몸', words: [
-    {id:'w_son', char:'손', name:'손', type:'CHAR', tts:'손'},
-    {id:'w_nun', char:'눈', name:'눈', type:'CHAR', tts:'눈'},
-    {id:'w_gwi', char:'귀', name:'귀', type:'CHAR', tts:'귀'},
-    {id:'w_ip', char:'입', name:'입', type:'CHAR', tts:'입'},
-    {id:'w_pal', char:'팔', name:'팔', type:'CHAR', tts:'팔'},
+  body: { title: '🖐️ 우리 몸', words: [
+    {id:'w_son', char:'손', name:'손', type:'CHAR', tts:'손', emoji:'✋'},
+    {id:'w_nun', char:'눈', name:'눈', type:'CHAR', tts:'눈', emoji:'👁️'},
+    {id:'w_gwi', char:'귀', name:'귀', type:'CHAR', tts:'귀', emoji:'👂'},
+    {id:'w_ip', char:'입', name:'입', type:'CHAR', tts:'입', emoji:'👄'},
+    {id:'w_pal', char:'팔', name:'팔', type:'CHAR', tts:'팔', emoji:'💪'},
   ]},
-  family: { title: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 우리 가족', words: [
-    {id:'w_appa', char:'아빠', name:'아빠', type:'CHAR', tts:'아빠'},
-    {id:'w_eomma', char:'엄마', name:'엄마', type:'CHAR', tts:'엄마'},
-    {id:'w_nuna', char:'누나', name:'누나', type:'CHAR', tts:'누나'},
-    {id:'w_hyeong', char:'형', name:'형', type:'CHAR', tts:'형'},
-    {id:'w_dongsaeng', char:'동생', name:'동생', type:'CHAR', tts:'동생'},
+  family: { title: '👨‍👩‍👧 우리 가족', words: [
+    {id:'w_appa', char:'아빠', name:'아빠', type:'CHAR', tts:'아빠', emoji:'👨'},
+    {id:'w_eomma', char:'엄마', name:'엄마', type:'CHAR', tts:'엄마', emoji:'👩'},
+    {id:'w_nuna', char:'누나', name:'누나', type:'CHAR', tts:'누나', emoji:'👧'},
+    {id:'w_hyeong', char:'형', name:'형', type:'CHAR', tts:'형', emoji:'👦'},
+    {id:'w_dongsaeng', char:'동생', name:'동생', type:'CHAR', tts:'동생', emoji:'👶'},
   ]},
-  vehicles: { title: '\uD83D\uDE97 탈것', words: [
-    {id:'w_cha', char:'차', name:'차', type:'CHAR', tts:'차'},
-    {id:'w_bae', char:'배', name:'배', type:'CHAR', tts:'배'},
-    {id:'w_bus', char:'버스', name:'버스', type:'CHAR', tts:'버스'},
-    {id:'w_gicha', char:'기차', name:'기차', type:'CHAR', tts:'기차'},
-    {id:'w_jahajeon', char:'자전거', name:'자전거', type:'CHAR', tts:'자전거'},
+  vehicles: { title: '🚗 탈것', words: [
+    {id:'w_cha', char:'차', name:'차', type:'CHAR', tts:'차', emoji:'🚗'},
+    {id:'w_bae', char:'배', name:'배', type:'CHAR', tts:'배', emoji:'🚢'},
+    {id:'w_bus', char:'버스', name:'버스', type:'CHAR', tts:'버스', emoji:'🚌'},
+    {id:'w_gicha', char:'기차', name:'기차', type:'CHAR', tts:'기차', emoji:'🚂'},
+    {id:'w_jahajeon', char:'자전거', name:'자전거', type:'CHAR', tts:'자전거', emoji:'🚲'},
   ]},
 };
 

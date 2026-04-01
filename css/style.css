@@ -107,7 +107,7 @@ body {
 .star-counter { position: absolute; top: 16px; right: 24px; font-size: 22px; display: flex; align-items: center; gap: 4px; }
 
 /* 챕터/레슨 선택 */
-.scroll-row { display: flex; gap: 16px; padding: 24px; overflow-x: auto; align-items: center; flex: 1; }
+.scroll-row { display: flex; gap: 16px; padding: 24px; overflow-x: auto; align-items: center; justify-content: center; flex: 1; }
 .chapter-card, .lesson-card {
   border-radius: 20px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 8px;
@@ -121,7 +121,7 @@ body {
 .chapter-card.locked { opacity: 0.4; }
 .chapter-card.locked .emoji { filter: grayscale(1); }
 
-.lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, 130px); gap: 16px; padding: 24px; flex: 1; align-content: start; }
+.lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, 130px); gap: 16px; padding: 24px; flex: 1; align-content: center; justify-content: center; }
 .lesson-card { width: 120px; height: 120px; background: var(--card); border-radius: 16px; font-size: 16px; font-weight: bold; }
 .lesson-card.locked { opacity: 0.35; }
 .lesson-card.done { background: #D4F3E7; }

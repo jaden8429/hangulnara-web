@@ -230,8 +230,9 @@ function renderListen(el, item) {
         '<div class="speech-bubble">' + mascotMsg + '</div>' +
       '</div>' +
       '<div class="learn-right">' +
+        (item.emoji ? '<div style="font-size:min(80px,10vw);animation:float 2s ease-in-out infinite">' + item.emoji + '</div>' : '') +
         '<div class="char-display large float-anim" style="background:#CBE7F5">' + item.char + '</div>' +
-        '<div class="learn-name">' + item.name + '</div>' +
+        '<div class="learn-name">' + item.name + (item.emoji ? ' ' + item.emoji : '') + '</div>' +
         (item.word ? '<div class="learn-word">' + item.char + ' → ' + item.word + '</div>' : '') +
         '<div class="learn-actions">' +
           '<button class="btn icon lg yellow" id="speakBtn">🔊</button>' +
@@ -609,7 +610,7 @@ function goThemes() {
   document.getElementById('reviewTitle').textContent = '🎨 테마학습';
   var el = document.getElementById('reviewContent');
   var html = '<div style="font-size:22px;font-weight:bold;margin-bottom:16px">🎨 테마별 글자 연습</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:16px">';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center">';
   var colors = ['#CBE7F5','#FFE8A3','#FFD6D6','#D4F3E7','#E8D5FF','#FFDDB0'];
   var idx = 0;
   Object.keys(WORD_THEMES).forEach(function(key) {
