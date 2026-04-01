@@ -5,38 +5,37 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
 
-// === TTS ===
+// === TTS (프리레코딩 오디오 + Web Speech API 폴백) ===
 var tts = null;
+var currentAudio = null;
 function initTTS() {
-  if (!('speechSynthesis' in window)) return;
-  tts = window.speechSynthesis;
+  if ('speechSynthesis' in window) tts = window.speechSynthesis;
 }
-function speak(text) {
-  if (!tts) return;
+function stopAudio() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+  if (tts) tts.cancel();
+}
+function playAudio(text, fallbackRate, fallbackPitch) {
   var d = loadData();
   if (!d.settings.tts) return;
-  tts.cancel();
-  var u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ko-KR';
-  u.rate = 0.9;
-  u.pitch = 1.35;
-  u.volume = 1.0;
-  tts.speak(u);
+  stopAudio();
+  var src = (typeof AUDIO_MAP !== 'undefined') ? AUDIO_MAP[text] : null;
+  if (src) {
+    currentAudio = new Audio(src);
+    currentAudio.play().catch(function() { fallbackTTS(text, fallbackRate, fallbackPitch); });
+  } else {
+    fallbackTTS(text, fallbackRate, fallbackPitch);
+  }
 }
-
-// 다람이 목소리 (더 높고 귀여운 톤)
-function speakDarami(text) {
+function fallbackTTS(text, rate, pitch) {
   if (!tts) return;
-  var d = loadData();
-  if (!d.settings.tts) return;
   tts.cancel();
   var u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ko-KR';
-  u.rate = 0.85;   // 조금 더 천천히
-  u.pitch = 1.6;   // 높고 귀여운 톤
-  u.volume = 1.0;
+  u.lang = 'ko-KR'; u.rate = rate; u.pitch = pitch; u.volume = 1.0;
   tts.speak(u);
 }
+function speak(text) { playAudio(text, 0.9, 1.35); }
+function speakDarami(text) { playAudio(text, 0.85, 1.6); }
 initTTS();
 
 // === 아이 이름 로드 ===

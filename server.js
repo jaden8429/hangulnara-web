@@ -11,6 +11,7 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.ogg': 'audio/ogg',
+  '.mp3': 'audio/mpeg',
   '.ico': 'image/x-icon',
 };
 
