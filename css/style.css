@@ -11,13 +11,14 @@
 body {
   font-family: 'NanumSquareRound', -apple-system, sans-serif;
   background: var(--bg); color: var(--text);
-  overflow: hidden; height: 100vh; width: 100vw;
+  overflow: hidden; height: 100vh; height: 100dvh; width: 100vw;
   user-select: none; -webkit-user-select: none;
   touch-action: manipulation;
+  position: relative;
 }
 
-/* 화면 컨테이너 */
-.screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; flex-direction: column; }
+/* 화면 컨테이너 - 스크롤 가능 */
+.screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
 .screen.active { display: flex; }
 
 /* 상단 바 */
@@ -100,14 +101,14 @@ body {
 .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
 
 /* 홈 */
-#home { align-items: center; justify-content: center; gap: 16px; }
+#home { align-items: center; justify-content: center; gap: 16px; min-height: 100%; padding: 16px; }
 #home .logo { font-size: 48px; color: var(--blue); font-weight: bold; }
 #home .sub { font-size: 20px; color: var(--text2); }
 #home .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .star-counter { position: absolute; top: 16px; right: 24px; font-size: 22px; display: flex; align-items: center; gap: 4px; }
 
 /* 챕터/레슨 선택 */
-.scroll-row { display: flex; gap: 16px; padding: 24px; overflow-x: auto; align-items: center; justify-content: center; flex: 1; }
+.scroll-row { display: flex; gap: 16px; padding: 24px; overflow-x: auto; align-items: center; justify-content: center; flex: 1; flex-wrap: wrap; align-content: center; }
 .chapter-card, .lesson-card {
   border-radius: 20px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 8px;
@@ -130,7 +131,7 @@ body {
 /* 학습 화면 - 콘텐츠 영역 최대 활용 */
 #learning .content {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  gap: 24px; padding: 8px 24px; overflow: hidden;
+  gap: 24px; padding: 8px 24px; overflow-y: auto; overflow-x: hidden; min-height: 0;
 }
 .progress-bar { height: 8px; background: #E8E0D8; border-radius: 4px; margin: 0 24px; flex-shrink: 0; }
 .progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s ease; }
@@ -186,10 +187,10 @@ body {
 }
 .canvas-tools { display: flex; gap: 12px; margin-top: 10px; justify-content: center; }
 
-/* 학습 레이아웃 - 가로 배치 */
+/* 학습 레이아웃 - 가로 배치, 작은 화면은 세로 */
 .learn-row {
   display: flex; align-items: center; justify-content: center;
-  gap: 32px; width: 100%; height: 100%;
+  gap: 24px; width: 100%; height: 100%; flex-wrap: wrap; align-content: center;
 }
 .learn-left {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -206,7 +207,7 @@ body {
 /* 캔버스 레이아웃 (세로 중심) */
 .canvas-layout {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 8px; height: 100%;
+  justify-content: center; gap: 8px; width: 100%; min-height: 0;
 }
 .canvas-title { font-size: min(24px, 3vw); font-weight: bold; }
 .canvas-subtitle { font-size: min(18px, 2.2vw); color: var(--orange); }
