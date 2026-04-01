@@ -1,6 +1,6 @@
 // 한글나라 학습 콘텐츠 데이터
 
-var USER_NAME = '친구';  // 보호자 모드에서 변경 가능
+var USER_NAME = '서연';  // 보호자 모드에서 변경 가능
 
 const CHAPTERS = [
   { id:'prep', title:'준비', emoji:'✏️', order:0, unlock:'none',
