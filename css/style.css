@@ -204,10 +204,33 @@ body {
 .learn-word { font-size: min(22px, 2.8vw); color: var(--text2); }
 .learn-actions { display: flex; gap: 16px; margin-top: 8px; }
 
+/* 캔버스 + 이모지 힌트 가로 배치 */
+.canvas-with-hint {
+  display: flex; align-items: center; justify-content: center;
+  gap: min(24px, 3vw); width: 100%; height: 100%; flex-wrap: wrap; align-content: center;
+}
+
+/* 이모지 그림 힌트 (캔버스 옆) */
+.canvas-emoji-hint {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; flex-shrink: 0;
+  background: var(--card); border-radius: 24px; padding: min(20px, 2.5vw);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.canvas-emoji-pic {
+  font-size: min(100px, 14vw, 14vh);
+  line-height: 1;
+  animation: float 2.5s ease-in-out infinite;
+}
+.canvas-emoji-label {
+  font-size: min(28px, 3.5vw); font-weight: bold; color: var(--text);
+}
+
 /* 캔버스 레이아웃 (세로 중심) */
 .canvas-layout {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 8px; width: 100%; min-height: 0;
+  justify-content: center; gap: 8px; min-height: 0;
 }
 .canvas-title { font-size: min(24px, 3vw); font-weight: bold; }
 .canvas-subtitle { font-size: min(18px, 2.2vw); color: var(--orange); }

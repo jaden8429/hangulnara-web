@@ -331,13 +331,18 @@ function showAutoIndicator(show) {
 // === TRACE 단계: 따라쓰기 (가이드 보이는 상태에서 작성 → 자동 평가) ===
 function renderTrace(el, item) {
   var c = createCanvasHtml();
+  var emojiHint = item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
+
   el.innerHTML =
-    '<div class="canvas-layout">' +
-      '<div class="canvas-title" id="traceMsg">따라 써보자!' + (traceRetry > 0 ? ' (' + traceRetry + '번째 다시)' : '') + '</div>' +
-      c.html +
-      '<div class="canvas-tools">' +
-        '<button class="btn icon pink" id="traceClearBtn">🗑️</button>' +
-        '<button class="btn icon orange" id="traceUndoBtn">↩️</button>' +
+    '<div class="canvas-with-hint">' +
+      emojiHint +
+      '<div class="canvas-layout">' +
+        '<div class="canvas-title" id="traceMsg">따라 써보자!' + (traceRetry > 0 ? ' (' + traceRetry + '번째 다시)' : '') + '</div>' +
+        c.html +
+        '<div class="canvas-tools">' +
+          '<button class="btn icon pink" id="traceClearBtn">🗑️</button>' +
+          '<button class="btn icon orange" id="traceUndoBtn">↩️</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
 
@@ -403,15 +408,20 @@ function autoEvalTrace() {
 // === FREE 단계: 혼자쓰기 (가이드 없이 → 자동 평가) ===
 function renderFree(el, item) {
   var c = createCanvasHtml();
+  var emojiHint = item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
+
   el.innerHTML =
-    '<div class="canvas-layout">' +
-      '<div class="canvas-title" id="freeMsg">혼자 써보자! "' + item.name + '"</div>' +
-      (freeRetry > 0 ? '<div class="canvas-subtitle">다시 도전! (' + freeRetry + '번째)</div>' : '') +
-      c.html +
-      '<div class="canvas-tools">' +
-        '<button class="btn icon pink" id="freeClearBtn">🗑️</button>' +
-        '<button class="btn icon orange" id="freeUndoBtn">↩️</button>' +
-        '<button class="btn icon yellow" id="hintBtn">💡</button>' +
+    '<div class="canvas-with-hint">' +
+      emojiHint +
+      '<div class="canvas-layout">' +
+        '<div class="canvas-title" id="freeMsg">혼자 써보자! "' + item.name + '"</div>' +
+        (freeRetry > 0 ? '<div class="canvas-subtitle">다시 도전! (' + freeRetry + '번째)</div>' : '') +
+        c.html +
+        '<div class="canvas-tools">' +
+          '<button class="btn icon pink" id="freeClearBtn">🗑️</button>' +
+          '<button class="btn icon orange" id="freeUndoBtn">↩️</button>' +
+          '<button class="btn icon yellow" id="hintBtn">💡</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
 
