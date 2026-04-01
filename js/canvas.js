@@ -22,21 +22,36 @@ class WritingCanvas {
   _bindEvents() {
     var self = this;
     var c = this.canvas;
-    // 포인터 이벤트 + 마우스/터치 fallback
-    if (window.PointerEvent) {
-      c.addEventListener('pointerdown', function(e){ self._start(e); }, { passive: false });
-      c.addEventListener('pointermove', function(e){ self._move(e); }, { passive: false });
-      c.addEventListener('pointerup', function(e){ self._end(e); }, { passive: false });
-      c.addEventListener('pointercancel', function(e){ self._end(e); }, { passive: false });
-    }
-    // 마우스 이벤트 (PC 호환 보장)
-    c.addEventListener('mousedown', function(e){ if(!window.PointerEvent) self._start(e); }, { passive: false });
-    c.addEventListener('mousemove', function(e){ if(!window.PointerEvent) self._move(e); }, { passive: false });
-    c.addEventListener('mouseup', function(e){ if(!window.PointerEvent) self._end(e); }, { passive: false });
-    // 터치 이벤트 (모바일 호환 보장)
-    c.addEventListener('touchstart', function(e){ e.preventDefault(); if(!window.PointerEvent && e.touches.length===1) self._start(e.touches[0]); }, { passive: false });
-    c.addEventListener('touchmove', function(e){ e.preventDefault(); if(!window.PointerEvent && e.touches.length===1) self._move(e.touches[0]); }, { passive: false });
-    c.addEventListener('touchend', function(e){ e.preventDefault(); if(!window.PointerEvent) self._end(e.changedTouches?e.changedTouches[0]:e); }, { passive: false });
+    // 모든 입력 방식 지원: 포인터 + 마우스 + 터치
+    // 포인터 이벤트 (최신 브라우저, S Pen)
+    c.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); self._start(e); }, false);
+    c.addEventListener('pointermove', function(e){ e.preventDefault(); self._move(e); }, false);
+    c.addEventListener('pointerup', function(e){ e.preventDefault(); self._end(e); }, false);
+    c.addEventListener('pointercancel', function(e){ self._end(e); }, false);
+    // 마우스 이벤트 (PC fallback)
+    c.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); self._startMouse(e); }, false);
+    c.addEventListener('mousemove', function(e){ self._moveMouse(e); }, false);
+    c.addEventListener('mouseup', function(e){ self._endMouse(e); }, false);
+    // 터치 이벤트 (모바일 fallback)
+    c.addEventListener('touchstart', function(e){ e.preventDefault(); if(e.touches.length===1) self._start(e.touches[0]); }, { passive: false });
+    c.addEventListener('touchmove', function(e){ e.preventDefault(); if(e.touches.length===1) self._move(e.touches[0]); }, { passive: false });
+    c.addEventListener('touchend', function(e){ e.preventDefault(); self._end(e.changedTouches?e.changedTouches[0]:e); }, { passive: false });
+  }
+
+  // 마우스 전용 (포인터 이벤트가 발생하면 _mouseActive 안 됨)
+  _startMouse(e) {
+    if (this._pointerActive) return; // 포인터 이벤트가 이미 처리 중이면 무시
+    this._mouseActive = true;
+    this._start(e);
+  }
+  _moveMouse(e) {
+    if (!this._mouseActive) return;
+    this._move(e);
+  }
+  _endMouse(e) {
+    if (!this._mouseActive) return;
+    this._mouseActive = false;
+    this._end(e);
   }
 
   _getPos(e) {
@@ -51,12 +66,12 @@ class WritingCanvas {
 
   _start(e) {
     if (this._locked) return;
-    if (e.preventDefault) e.preventDefault();
-    if (e.pointerId !== undefined && this.canvas.setPointerCapture) {
+    if (e.pointerId !== undefined) {
+      this._pointerActive = true;
       try { this.canvas.setPointerCapture(e.pointerId); } catch(ex) {}
     }
     this._cancelAutoTimer();
-    const p = this._getPos(e);
+    var p = this._getPos(e);
     this.currentStroke = [p];
     this.redraw();
   }
@@ -70,7 +85,7 @@ class WritingCanvas {
 
   _end(e) {
     if (this._locked || !this.currentStroke) return;
-    if (e.preventDefault) e.preventDefault();
+    this._pointerActive = false;
     var validStroke = this.currentStroke.length > 1;
     if (validStroke) {
       this.strokes.push(this.currentStroke);

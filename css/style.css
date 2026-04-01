@@ -185,6 +185,7 @@ body {
 #writingCanvas {
   background: var(--canvas-bg); touch-action: none;
   border: 2px solid var(--guide); border-radius: 20px;
+  cursor: crosshair; position: relative; z-index: 10;
 }
 .canvas-tools { display: flex; gap: 12px; margin-top: 10px; justify-content: center; }
 
