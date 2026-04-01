@@ -20,11 +20,23 @@ class WritingCanvas {
   }
 
   _bindEvents() {
-    const c = this.canvas;
-    c.addEventListener('pointerdown', e => this._start(e), { passive: false });
-    c.addEventListener('pointermove', e => this._move(e), { passive: false });
-    c.addEventListener('pointerup', e => this._end(e), { passive: false });
-    c.addEventListener('pointercancel', e => this._end(e), { passive: false });
+    var self = this;
+    var c = this.canvas;
+    // 포인터 이벤트 + 마우스/터치 fallback
+    if (window.PointerEvent) {
+      c.addEventListener('pointerdown', function(e){ self._start(e); }, { passive: false });
+      c.addEventListener('pointermove', function(e){ self._move(e); }, { passive: false });
+      c.addEventListener('pointerup', function(e){ self._end(e); }, { passive: false });
+      c.addEventListener('pointercancel', function(e){ self._end(e); }, { passive: false });
+    }
+    // 마우스 이벤트 (PC 호환 보장)
+    c.addEventListener('mousedown', function(e){ if(!window.PointerEvent) self._start(e); }, { passive: false });
+    c.addEventListener('mousemove', function(e){ if(!window.PointerEvent) self._move(e); }, { passive: false });
+    c.addEventListener('mouseup', function(e){ if(!window.PointerEvent) self._end(e); }, { passive: false });
+    // 터치 이벤트 (모바일 호환 보장)
+    c.addEventListener('touchstart', function(e){ e.preventDefault(); if(!window.PointerEvent && e.touches.length===1) self._start(e.touches[0]); }, { passive: false });
+    c.addEventListener('touchmove', function(e){ e.preventDefault(); if(!window.PointerEvent && e.touches.length===1) self._move(e.touches[0]); }, { passive: false });
+    c.addEventListener('touchend', function(e){ e.preventDefault(); if(!window.PointerEvent) self._end(e.changedTouches?e.changedTouches[0]:e); }, { passive: false });
   }
 
   _getPos(e) {
@@ -39,8 +51,10 @@ class WritingCanvas {
 
   _start(e) {
     if (this._locked) return;
-    e.preventDefault();
-    this.canvas.setPointerCapture(e.pointerId);
+    if (e.preventDefault) e.preventDefault();
+    if (e.pointerId !== undefined && this.canvas.setPointerCapture) {
+      try { this.canvas.setPointerCapture(e.pointerId); } catch(ex) {}
+    }
     this._cancelAutoTimer();
     const p = this._getPos(e);
     this.currentStroke = [p];
@@ -49,14 +63,14 @@ class WritingCanvas {
 
   _move(e) {
     if (this._locked || !this.currentStroke) return;
-    e.preventDefault();
+    if (e.preventDefault) e.preventDefault();
     this.currentStroke.push(this._getPos(e));
     this.redraw();
   }
 
   _end(e) {
     if (this._locked || !this.currentStroke) return;
-    e.preventDefault();
+    if (e.preventDefault) e.preventDefault();
     var validStroke = this.currentStroke.length > 1;
     if (validStroke) {
       this.strokes.push(this.currentStroke);

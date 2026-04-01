@@ -172,6 +172,7 @@ body {
   border: 3px solid var(--green); border-top-color: transparent;
   animation: autoSpin 1.2s linear infinite;
   opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
 }
 .auto-eval-indicator.active { opacity: 1; }
 @keyframes autoSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
