@@ -322,3 +322,74 @@ body {
   border-radius: 16px; padding: 12px 20px; width: 200px; outline: none;
   font-weight: bold; color: var(--text);
 }
+
+/* === 듣고 맞추기 (사고형 학습) === */
+.match-menu {
+  flex: 1; display: flex; flex-wrap: wrap; gap: 24px;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.matching-card {
+  width: 200px; height: 200px; border-radius: 24px; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  transition: transform 0.15s; color: var(--text); font-weight: bold;
+}
+.matching-card:active { transform: scale(0.95); }
+.matching-card .name { font-size: 18px; }
+
+.match-content {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 24px; padding: 16px 24px;
+}
+.match-prompt { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.match-question {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.match-emoji {
+  font-size: 100px; animation: float 2s ease-in-out infinite;
+}
+.match-hint { font-size: 18px; color: var(--text2); }
+.match-choices {
+  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+  margin-top: 8px;
+}
+.match-choice {
+  width: 110px; height: 110px; border-radius: 20px; border: 3px solid var(--gray);
+  background: var(--card); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, background 0.2s, border-color 0.2s;
+}
+.match-choice:active:not(:disabled) { transform: scale(0.92); }
+.match-choice:disabled { opacity: 0.4; cursor: not-allowed; }
+.match-choice-char {
+  font-size: 64px; font-weight: bold; color: var(--text);
+}
+.match-choice.correct {
+  background: #C8F2D8; border-color: #4CAF50;
+  animation: pulse 0.5s ease-in-out;
+}
+.match-choice.wrong {
+  background: #FFD8D8; border-color: #E57373;
+  animation: shake 0.4s;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+.match-result {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px;
+}
+.match-result-stars {
+  font-size: 40px; font-weight: bold; color: var(--text);
+}
+.match-result-msg {
+  font-size: 20px; color: var(--text2);
+}

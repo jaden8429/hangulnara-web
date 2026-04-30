@@ -30,6 +30,7 @@
   <div class="menu">
     <button class="btn big blue" onclick="goChapters()">📝 학습하기</button>
     <button class="btn big orange" onclick="goThemes()">🎨 테마학습</button>
+    <button class="btn big pink" onclick="goMatching()">🎮 듣고 맞추기</button>
     <button class="btn big yellow" onclick="goReview()">🔄 복습하기</button>
     <button class="btn big purple" onclick="goReward()">⭐ 스티커북</button>
   </div>
@@ -87,6 +88,19 @@
   <div class="sticker-grid" id="stickerGrid"></div>
 </div>
 
+<!-- 듣고 맞추기 메뉴 -->
+<div id="matching" class="screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="title">🎮 듣고 맞추기</span>
+    <div class="mascot-mini">🐿️</div>
+  </div>
+  <div class="match-menu" id="matchingMenu"></div>
+</div>
+
+<!-- 듣고 맞추기 플레이 화면 -->
+<div id="matchingPlay" class="screen"></div>
+
 <!-- 보호자 게이트 -->
 <div id="parentGate" class="screen">
   <div class="top-bar">
@@ -119,5 +133,6 @@
 <script src="js/strokes.js"></script>
 <script src="js/canvas.js"></script>
 <script src="js/app.js"></script>
+<script src="js/matching.js"></script>
 </body>
 </html>
