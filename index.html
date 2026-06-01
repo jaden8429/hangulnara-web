@@ -29,8 +29,10 @@
   <div class="logo" style="font-size:42px">한글나라</div>
   <div class="menu">
     <button class="btn big blue" onclick="goChapters()">📝 학습하기</button>
+    <button class="btn big green" onclick="goCompose()">🪄 글자 만들기</button>
     <button class="btn big orange" onclick="goThemes()">🎨 테마학습</button>
     <button class="btn big pink" onclick="goMatching()">🎮 듣고 맞추기</button>
+    <button class="btn big blue" onclick="goReading()">📖 문장 읽기</button>
     <button class="btn big yellow" onclick="goReview()">🔄 복습하기</button>
     <button class="btn big purple" onclick="goReward()">⭐ 스티커북</button>
   </div>
@@ -101,6 +103,32 @@
 <!-- 듣고 맞추기 플레이 화면 -->
 <div id="matchingPlay" class="screen"></div>
 
+<!-- 글자 만들기 (자모 합성) 메뉴 -->
+<div id="compose" class="screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="title">🪄 글자 만들기</span>
+    <div class="mascot-mini">🐿️</div>
+  </div>
+  <div class="match-menu" id="composeMenu"></div>
+</div>
+
+<!-- 글자 만들기 플레이 화면 -->
+<div id="composePlay" class="screen"></div>
+
+<!-- 문장 읽기 메뉴 -->
+<div id="reading" class="screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="title">📖 문장 읽기</span>
+    <div class="mascot-mini">🐿️</div>
+  </div>
+  <div class="reading-list" id="readingList"></div>
+</div>
+
+<!-- 문장 읽기 플레이 -->
+<div id="readingPlay" class="screen"></div>
+
 <!-- 보호자 게이트 -->
 <div id="parentGate" class="screen">
   <div class="top-bar">
@@ -134,5 +162,7 @@
 <script src="js/canvas.js"></script>
 <script src="js/app.js"></script>
 <script src="js/matching.js"></script>
+<script src="js/compose.js"></script>
+<script src="js/reading.js"></script>
 </body>
 </html>

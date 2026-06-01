@@ -42,6 +42,25 @@ var MATCHING_POOLS = {
 var ROUND_SIZE = 5;       // 한 라운드 문항 수
 var CHOICE_COUNT = 3;     // 보기 개수
 
+// 혼동쌍 테이블 (변별 학습 효과 극대화)
+// 형태/소리가 비슷한 글자를 함께 보여줘서 인지적 변별 자극
+var CONFUSION_PAIRS = {
+  // 자음 — 형태 유사
+  'ㄱ': ['ㅋ', 'ㄴ'], 'ㅋ': ['ㄱ', 'ㅌ'],
+  'ㄴ': ['ㄹ', 'ㄱ'], 'ㄹ': ['ㄴ', 'ㄷ'],
+  'ㄷ': ['ㅌ', 'ㄹ'], 'ㅌ': ['ㄷ', 'ㅋ'],
+  'ㅂ': ['ㅍ', 'ㅁ'], 'ㅍ': ['ㅂ', 'ㅌ'],
+  'ㅁ': ['ㅂ', 'ㅇ'], 'ㅇ': ['ㅎ', 'ㅁ'],
+  'ㅈ': ['ㅊ', 'ㅅ'], 'ㅊ': ['ㅈ', 'ㅋ'],
+  'ㅅ': ['ㅈ', 'ㅆ'], 'ㅎ': ['ㅇ', 'ㅊ'],
+  // 모음 — 좌우/방향 유사
+  'ㅏ': ['ㅓ', 'ㅑ'], 'ㅓ': ['ㅏ', 'ㅕ'],
+  'ㅑ': ['ㅕ', 'ㅏ'], 'ㅕ': ['ㅑ', 'ㅓ'],
+  'ㅗ': ['ㅜ', 'ㅛ'], 'ㅜ': ['ㅗ', 'ㅠ'],
+  'ㅛ': ['ㅠ', 'ㅗ'], 'ㅠ': ['ㅛ', 'ㅜ'],
+  'ㅡ': ['ㅣ', 'ㅗ'], 'ㅣ': ['ㅡ', 'ㅏ'],
+};
+
 var matchState = null;
 
 function goMatching() {
@@ -86,10 +105,24 @@ function renderMatchingQuestion() {
   var s = matchState;
   var q = s.questions[s.index];
 
-  // 오답 보기 만들기 (정답 제외 풀에서 랜덤)
-  var wrongPool = s.allItems.filter(function(it) { return it.id !== q.id; });
-  wrongPool.sort(function() { return Math.random() - 0.5; });
-  var choices = wrongPool.slice(0, CHOICE_COUNT - 1);
+  // 오답 보기 — 혼동쌍 우선 (70%), 부족하면 랜덤으로 보충
+  var confusable = CONFUSION_PAIRS[q.char] || [];
+  var distractors = [];
+  confusable.forEach(function(ch) {
+    var item = s.allItems.find(function(it) { return it.char === ch && it.id !== q.id; });
+    if (item && !distractors.find(function(d) { return d.id === item.id; })) {
+      distractors.push(item);
+    }
+  });
+  // 부족분 랜덤 보충
+  if (distractors.length < CHOICE_COUNT - 1) {
+    var rest = s.allItems.filter(function(it) {
+      return it.id !== q.id && !distractors.find(function(d) { return d.id === it.id; });
+    });
+    rest.sort(function() { return Math.random() - 0.5; });
+    distractors = distractors.concat(rest.slice(0, (CHOICE_COUNT - 1) - distractors.length));
+  }
+  var choices = distractors.slice(0, CHOICE_COUNT - 1);
   choices.push(q);
   choices.sort(function() { return Math.random() - 0.5; });
 
@@ -157,12 +190,14 @@ function onMatchChoice(choice, btn, correct) {
     // 정답
     s.answered = true;
     btn.classList.add('correct');
-    var stars = s.retryUsed ? 1 : 2;
-    s.correctCount += stars;
+    // 매칭은 인식 학습 — 산출 학습(쓰기)보다 낮게 평가: 첫 시도 1별, 재시도 후 0별
+    var stars = s.retryUsed ? 0 : 1;
+    var roundPoints = s.retryUsed ? 1 : 2; // 라운드 내 표시용 점수
+    s.correctCount += roundPoints;
     var msg = getPraise(s.retryUsed ? 1 : 2);
     document.getElementById('matchBubble').textContent = msg;
     speakDarami(msg);
-    // 진도 기록 (재학습 효과)
+    // 진도 기록 — bestStars 초과 시에만 누적 (인플레이션 방지는 storage.js가 처리)
     recordResult(correct.id, true, stars);
     setTimeout(function() {
       s.index++;

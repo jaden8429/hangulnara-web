@@ -79,14 +79,6 @@ setTimeout(function() {
   setTimeout(function() { speakDarami(greeting); }, 300);
 }, 2000);
 
-var HOME_GREETINGS = [
-  USER_NAME+'아 안녕! 오늘도 같이 공부하자!',
-  '다람이가 '+USER_NAME+'(이)를 기다리고 있었어!',
-  USER_NAME+'아 오늘은 뭘 배울까?',
-  '우와, '+USER_NAME+'아 다시 만나서 반가워!',
-  USER_NAME+'아 같이 한글 쓰러 가자!',
-];
-
 // 다람이 캐릭터 인사말 (귀여운 말투)
 function getHomeGreeting() {
   var n = USER_NAME;
@@ -120,11 +112,25 @@ function goChapters() {
     var comp = getChapterCompletion(ch.id);
     var card = document.createElement('div');
     card.className = 'chapter-card' + (unlocked ? '' : ' locked');
+    // 잠금 카드: 흐릿한 미리보기 이모지 + 어떤 단계 마치면 열리는지 안내
+    var lockHint = '';
+    if (!unlocked && i > 0) {
+      var prev = CHAPTERS[i - 1];
+      lockHint = '<div class="lock-hint">' + prev.title + ' 끝내면 열려요!</div>';
+    }
     card.innerHTML =
-      '<div class="emoji">' + (unlocked ? ch.emoji : '🔒') + '</div>' +
+      '<div class="emoji" style="opacity:' + (unlocked ? 1 : 0.35) + '">' + ch.emoji + '</div>' +
+      (unlocked ? '' : '<div class="lock-overlay">🔒</div>') +
       '<div class="name">' + ch.title + '</div>' +
-      (unlocked && comp > 0 ? '<div style="width:80%;height:8px;background:#E8E0D8;border-radius:4px;overflow:hidden"><div style="width:' + (comp * 100) + '%;height:100%;background:#A8E6CF;border-radius:4px"></div></div>' : '');
+      (unlocked && comp > 0 ? '<div style="width:80%;height:8px;background:#E8E0D8;border-radius:4px;overflow:hidden"><div style="width:' + (comp * 100) + '%;height:100%;background:#A8E6CF;border-radius:4px"></div></div>' : '') +
+      lockHint;
     if (unlocked) card.onclick = function() { goLessons(ch.id); };
+    else card.onclick = function() {
+      // 잠긴 카드 클릭 시 다람이가 안내
+      var hint = (i > 0 ? CHAPTERS[i-1].title + ' 단계를 먼저 끝내야 해~!' : '아직 잠겨 있어!');
+      speakDarami(hint);
+      showToast(hint, 1800);
+    };
     list.appendChild(card);
   });
   showScreen('chapters');
@@ -488,7 +494,10 @@ function autoEvalFree() {
         var msg = document.getElementById('freeMsg');
         if (msg) msg.textContent = '다시 도전! "' + item.name + '" (' + freeRetry + '번째)';
       });
-      showToast('다시 써보자!', 1000);
+      // 구체적 오답 힌트 (canvas.js evaluate가 reason/hint 제공)
+      var hint = result.hint || '다시 써보자!';
+      showToast(hint, 1800);
+      speakDarami(hint);
     }
   }
 }
@@ -505,19 +514,37 @@ function renderPraise(el) {
   var mascotEmoji = stars >= 3 ? '🥳' : stars >= 1 ? '😊' : '🤗';
   var mascotClass = stars >= 2 ? 'mascot-happy' : 'mascot-wave';
 
+  // 0별 시: 칭찬 대신 "다시 보기"로 GUIDED 자동 재진입 옵션 제공 (사고형 학습)
+  var actionButtons = stars === 0
+    ? '<div class="learn-actions" style="margin-top:24px">' +
+        '<button class="btn orange" id="praiseReviewBtn">🐿️ 다시 보기</button>' +
+        '<button class="btn green" id="praiseNextBtn">다음 →</button>' +
+      '</div>'
+    : '<button class="btn green big" id="praiseNextBtn" style="margin-top:24px">다음 →</button>';
+
   el.innerHTML =
     '<div class="praise-screen">' +
       '<div class="mascot ' + mascotClass + '" style="font-size:88px;animation-delay:0.1s">' + mascotEmoji + '</div>' +
       '<div class="stars">' + starHtml + '</div>' +
       '<div class="praise-text">' + text + '</div>' +
-      (stars >= 3 ? '<div class="praise-sub">🐿️ 다람이가 너무 기뻐서 춤출 것 같아~!</div>' : stars === 0 ? '<div class="praise-sub">🐿️ 괜찮아~ 다람이가 응원할게!</div>' : '') +
-      '<button class="btn green big" id="praiseNextBtn" style="margin-top:24px">다음 →</button>' +
+      (stars >= 3 ? '<div class="praise-sub">🐿️ 다람이가 너무 기뻐서 춤출 것 같아~!</div>' : stars === 0 ? '<div class="praise-sub">🐿️ 천천히 다시 보쟈~ 같이 할 수 있어!</div>' : '') +
+      actionButtons +
     '</div>';
   document.getElementById('praiseNextBtn').onclick = nextItem;
+  var reviewBtn = document.getElementById('praiseReviewBtn');
+  if (reviewBtn) {
+    reviewBtn.onclick = function() {
+      // 현재 글자를 GUIDED로 다시 보기 (획순 애니메이션 재학습)
+      currentStage = 'GUIDED';
+      traceRetry = 0;
+      freeRetry = 0;
+      renderStage();
+    };
+  }
 
   if (stars >= 3) { showConfetti(); showStarBurst(); }
   else if (stars >= 2) { showStarBurst(); }
-  // 다람이 목소리로 칭찬!
+  // 다람이 목소리로 칭찬/격려!
   speakDarami(text);
 
   if (!lessonStickerAwarded) {
@@ -593,18 +620,28 @@ function showStarBurst() {
 // === 복습 ===
 function goReview() {
   document.getElementById('reviewTitle').textContent = '복습하기';
-  var items = getFailedItems();
+  // 간격 반복 + 실패 항목 결합 (중복 제거)
+  var dueReview = getReviewItems(); // {item, lessonId, due, priority}
+  var failed = getFailedItems();
+  var seen = {};
+  var items = [];
+  dueReview.forEach(function(r) { if (!seen[r.item.id]) { seen[r.item.id] = true; items.push({ item: r.item, due: r.due }); } });
+  failed.forEach(function(it) { if (!seen[it.id]) { seen[it.id] = true; items.push({ item: it, due: -1 }); } });
+
   var el = document.getElementById('reviewContent');
   if (items.length === 0) {
     el.innerHTML = '<div class="empty-state"><div class="emoji">🎉</div><div class="msg">복습할 내용이 없어요!</div><div style="color:#7A6B5D">참 잘하고 있어요!</div></div>';
   } else {
-    el.innerHTML = '<div style="font-size:20px;margin-bottom:16px">다시 연습해볼 글자들이에요</div><div class="scroll-row" id="reviewCards"></div>';
+    el.innerHTML = '<div style="font-size:20px;margin-bottom:16px">🐿️ 다람이가 다시 보자고 한 글자들이야~</div><div class="scroll-row" id="reviewCards"></div>';
     var row = document.getElementById('reviewCards');
-    items.forEach(function(it) {
+    items.forEach(function(entry) {
+      var it = entry.item;
       var card = document.createElement('div');
       card.className = 'chapter-card';
-      card.style.cssText = 'width:120px;height:140px;background:rgba(255,190,118,0.3)';
-      card.innerHTML = '<div style="font-size:48px">' + it.char + '</div><div style="font-size:16px">' + it.name + '</div>';
+      var bg = entry.due < 0 ? 'rgba(255,170,170,0.35)' : 'rgba(255,190,118,0.3)';
+      card.style.cssText = 'width:120px;height:140px;background:' + bg;
+      var badge = entry.due < 0 ? '<div style="font-size:12px;color:#E53E3E;margin-top:2px">다시 도전!</div>' : '<div style="font-size:12px;color:#7A6B5D;margin-top:2px">복습 시간~</div>';
+      card.innerHTML = '<div style="font-size:48px">' + it.char + '</div><div style="font-size:16px">' + it.name + '</div>' + badge;
       card.onclick = function() { startReviewItem(it); };
       row.appendChild(card);
     });
@@ -691,16 +728,86 @@ function checkGate() {
 
 function showParentDashboard() {
   var el = document.getElementById('parentContent');
+  var hardItems = getHardItems(3);
+  var dueCount = getReviewItems().length;
+
+  // 자주 틀린 글자 + 오프라인 활동 추천
+  var hardHtml = '';
+  if (hardItems.length > 0) {
+    hardHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+    hardItems.forEach(function(h) {
+      var status = h.passed ? '✓ 통과 (틀린 적 ' + h.fail + '회)' : '⚠ 미통과 (' + h.fail + '회 실패)';
+      hardHtml += '<div style="background:#FFF0E0;padding:12px 16px;border-radius:12px;min-width:120px">' +
+        '<div style="font-size:36px;font-weight:bold">' + h.item.char + '</div>' +
+        '<div style="font-size:13px;color:#7A6B5D">' + h.item.name + '</div>' +
+        '<div style="font-size:12px;color:#E57373;margin-top:4px">' + status + '</div>' +
+      '</div>';
+    });
+    hardHtml += '</div>';
+    // 오프라인 활동 추천
+    var firstChar = hardItems[0].item.char;
+    hardHtml += '<div style="margin-top:12px;background:#E8F5E9;padding:12px 16px;border-radius:12px;font-size:14px;color:#2E7D32">' +
+      '💡 오프라인 활동 추천: 냉장고 자석으로 "' + firstChar + '" 만들어보기 / "' + firstChar + '"으로 시작하는 단어 5개 함께 말해보기' +
+    '</div>';
+  } else {
+    hardHtml = '<div style="color:#7A6B5D">아직 틀린 글자가 없어요!</div>';
+  }
+
+  // 프로필 관리
+  var profiles = getProfiles();
+  var activeId = getActiveProfileId();
+  var profileHtml = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
+  profiles.forEach(function(p) {
+    var isActive = p.id === activeId;
+    profileHtml += '<button class="profile-chip ' + (isActive ? 'active' : '') + '" data-pid="' + p.id + '">' +
+      (isActive ? '✓ ' : '') + p.name +
+    '</button>';
+  });
+  profileHtml += '<button class="profile-chip add" id="profileAddBtn">+ 새 프로필</button>';
+  profileHtml += '</div>';
+
   el.innerHTML =
-    '<h2 style="margin-bottom:16px">챕터별 진도</h2>' +
-    '<div id="chapterProgressArea"></div>' +
-    '<h2 style="margin:24px 0 16px">통계</h2>' +
-    '<div style="display:flex;gap:32px;font-size:18px">' +
+    '<h2 style="margin-bottom:8px">👨‍👩‍👧 프로필 (' + profiles.length + '명)</h2>' +
+    '<div id="profileArea">' + profileHtml + '</div>' +
+    '<h2 style="margin:24px 0 16px">📊 학습 요약</h2>' +
+    '<div style="display:flex;gap:24px;font-size:18px;flex-wrap:wrap;margin-bottom:16px">' +
       '<div>⭐ 총 별: ' + getTotalStars() + '개</div>' +
       '<div>🎨 스티커: ' + getTotalStickers() + '개</div>' +
+      '<div>🔄 복습 대기: ' + dueCount + '개</div>' +
     '</div>' +
-    '<h2 style="margin:24px 0 16px">설정</h2><div id="settingsArea"></div>' +
-    '<h2 style="margin:24px 0 16px;color:#E57373">초기화</h2><div id="resetArea"></div>';
+    '<h2 style="margin:24px 0 16px">⚠ 어려워하는 글자 TOP 3</h2>' +
+    '<div id="hardArea">' + hardHtml + '</div>' +
+    '<h2 style="margin:24px 0 16px">📚 챕터별 진도</h2>' +
+    '<div id="chapterProgressArea"></div>' +
+    '<h2 style="margin:24px 0 16px">⚙ 설정</h2><div id="settingsArea"></div>' +
+    '<h2 style="margin:24px 0 16px;color:#E57373">🗑 초기화</h2><div id="resetArea"></div>';
+
+  // 프로필 전환/추가 핸들러
+  document.querySelectorAll('.profile-chip[data-pid]').forEach(function(btn) {
+    btn.onclick = function() {
+      var pid = btn.dataset.pid;
+      if (pid === getActiveProfileId()) return;
+      setActiveProfile(pid);
+      // 이름 동기화
+      var p = getProfiles().find(function(x) { return x.id === pid; });
+      var data = loadData();
+      USER_NAME = (data.settings && data.settings.childName) || (p && p.name) || '친구';
+      showToast(USER_NAME + '으로 전환했어요!', 1500);
+      showParentDashboard();
+    };
+  });
+  var addBtn = document.getElementById('profileAddBtn');
+  if (addBtn) addBtn.onclick = function() {
+    var name = prompt('새 프로필 이름을 입력하세요', '');
+    if (!name) return;
+    var newId = addProfile(name.trim());
+    setActiveProfile(newId);
+    var data = loadData();
+    data.settings.childName = name.trim();
+    saveData(data);
+    USER_NAME = name.trim();
+    showParentDashboard();
+  };
 
   // 챕터별 진도 + 초기화 버튼
   var cpArea = document.getElementById('chapterProgressArea');

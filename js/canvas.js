@@ -43,10 +43,13 @@ class WritingCanvas {
     self._docPointerUp = function(e){ if(self._pointerActive) self._end(e); };
     document.addEventListener('pointerup', self._docPointerUp, false);
 
-    // --- 터치 이벤트 (모바일 fallback) ---
-    c.addEventListener('touchstart', function(e){ e.preventDefault(); if(e.touches.length===1) self._start(e.touches[0]); }, { passive: false });
-    c.addEventListener('touchmove', function(e){ e.preventDefault(); if(e.touches.length===1) self._move(e.touches[0]); }, { passive: false });
-    c.addEventListener('touchend', function(e){ e.preventDefault(); self._end(e.changedTouches?e.changedTouches[0]:e); }, { passive: false });
+    // --- 터치 이벤트 (PointerEvent 미지원 브라우저에서만 fallback) ---
+    // 갤럭시탭 등 최신 기기는 PointerEvent로 통합 처리되므로 touch는 중복 호출 방지
+    if (!window.PointerEvent) {
+      c.addEventListener('touchstart', function(e){ e.preventDefault(); if(e.touches.length===1) self._start(e.touches[0]); }, { passive: false });
+      c.addEventListener('touchmove', function(e){ e.preventDefault(); if(e.touches.length===1) self._move(e.touches[0]); }, { passive: false });
+      c.addEventListener('touchend', function(e){ e.preventDefault(); self._end(e.changedTouches?e.changedTouches[0]:e); }, { passive: false });
+    }
   }
 
   // 마우스 전용 (포인터 이벤트가 발생하면 _mouseActive 안 됨)
@@ -248,11 +251,11 @@ class WritingCanvas {
     this.redraw();
   }
 
-  // 평가
+  // 평가 (구체적 reason 포함)
   evaluate(expectedChar, itemType) {
     var points = this.getTotalPoints();
     var strokeCount = this.strokes.length;
-    if (points < 5) return { correct: false, stars: 0 };
+    if (points < 5) return { correct: false, stars: 0, reason: 'too_short', hint: '아직 거의 안 그렸어! 글자를 크게 그려봐~' };
 
     if (itemType === 'PREP') {
       var score = points > 30 ? 3 : points > 15 ? 2 : 1;
@@ -262,8 +265,12 @@ class WritingCanvas {
     var coverage = this._calcCoverage();
     var minStrokes = this._expectedStrokes(expectedChar);
 
-    if (strokeCount < Math.max(1, minStrokes - 1)) return { correct: false, stars: 0 };
-    if (coverage < 0.08) return { correct: false, stars: 0 };
+    if (strokeCount < Math.max(1, minStrokes - 1)) {
+      return { correct: false, stars: 0, reason: 'too_few_strokes', hint: '획이 부족해~ "' + expectedChar + '"는 ' + minStrokes + '획이야!' };
+    }
+    if (coverage < 0.08) {
+      return { correct: false, stars: 0, reason: 'too_small', hint: '글자가 너무 작아~ 칸을 가득 채워봐!' };
+    }
 
     var strokeMatch = Math.min(1, strokeCount / Math.max(1, minStrokes));
     var coverageScore = Math.min(1, coverage / 0.25);

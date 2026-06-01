@@ -11,6 +11,10 @@ const CHAPTERS = [
     lessons:['vowel_set_1','vowel_set_2'] },
   { id:'stage2', title:'쉬운 음절', emoji:'가', order:3, unlock:'chapter_complete:stage1_vowels',
     lessons:['syllable_set_ga','syllable_set_na','syllable_set_da'] },
+  { id:'stage2_diphthong', title:'이중모음', emoji:'ㅐ', order:4, unlock:'chapter_complete:stage2',
+    lessons:['diphthong_set_1','diphthong_set_2'] },
+  { id:'stage3_batchim', title:'받침 글자', emoji:'곰', order:5, unlock:'chapter_complete:stage2_diphthong',
+    lessons:['batchim_set_n','batchim_set_m','batchim_set_l'] },
 ];
 
 const LESSONS = {
@@ -77,6 +81,37 @@ const LESSONS = {
     { id:'s_ta', char:'타', name:'타', type:'CHAR', tts:'타' },
     { id:'s_pa', char:'파', name:'파', type:'CHAR', tts:'파' },
     { id:'s_ha', char:'하', name:'하', type:'CHAR', tts:'하' },
+  ]},
+  // 이중모음 (단모음 다음 단계)
+  diphthong_set_1: { title:'ㅐ ㅔ ㅒ ㅖ', threshold:3, items:[
+    { id:'dv_ae', char:'ㅐ', name:'애', type:'CHAR', tts:'애' },
+    { id:'dv_e', char:'ㅔ', name:'에', type:'CHAR', tts:'에' },
+    { id:'dv_yae', char:'ㅒ', name:'얘', type:'CHAR', tts:'얘' },
+    { id:'dv_ye', char:'ㅖ', name:'예', type:'CHAR', tts:'예' },
+  ]},
+  diphthong_set_2: { title:'ㅘ ㅝ ㅢ', threshold:2, items:[
+    { id:'dv_wa', char:'ㅘ', name:'와', type:'CHAR', tts:'와' },
+    { id:'dv_wo', char:'ㅝ', name:'워', type:'CHAR', tts:'워' },
+    { id:'dv_ui', char:'ㅢ', name:'의', type:'CHAR', tts:'의' },
+  ]},
+  // 받침 글자 — 자모 합성 응용
+  batchim_set_n: { title:'ㄴ 받침 (산 손 눈)', threshold:3, items:[
+    { id:'b_san', char:'산', name:'산', type:'CHAR', tts:'산', emoji:'⛰️' },
+    { id:'b_son', char:'손', name:'손', type:'CHAR', tts:'손', emoji:'✋' },
+    { id:'b_nun', char:'눈', name:'눈', type:'CHAR', tts:'눈', emoji:'👁️' },
+    { id:'b_mun', char:'문', name:'문', type:'CHAR', tts:'문', emoji:'🚪' },
+  ]},
+  batchim_set_m: { title:'ㅁ 받침 (곰 감 밤)', threshold:3, items:[
+    { id:'b_gom', char:'곰', name:'곰', type:'CHAR', tts:'곰', emoji:'🐻' },
+    { id:'b_gam', char:'감', name:'감', type:'CHAR', tts:'감', emoji:'🍊' },
+    { id:'b_bam', char:'밤', name:'밤', type:'CHAR', tts:'밤', emoji:'🌰' },
+    { id:'b_kkum', char:'꿈', name:'꿈', type:'CHAR', tts:'꿈', emoji:'💭' },
+  ]},
+  batchim_set_l: { title:'ㄹ 받침 (말 물 별)', threshold:3, items:[
+    { id:'b_mal', char:'말', name:'말', type:'CHAR', tts:'말', emoji:'🐴' },
+    { id:'b_mul', char:'물', name:'물', type:'CHAR', tts:'물', emoji:'💧' },
+    { id:'b_byeol', char:'별', name:'별', type:'CHAR', tts:'별', emoji:'⭐' },
+    { id:'b_dal', char:'달', name:'달', type:'CHAR', tts:'달', emoji:'🌙' },
   ]},
 };
 

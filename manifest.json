@@ -1,13 +1,20 @@
 {
   "name": "한글나라",
   "short_name": "한글나라",
-  "description": "재미있게 한글을 배워요!",
+  "id": "/hangulnara-web/",
+  "description": "다람이랑 같이 한글을 배워요! 6세 한글 학습 앱",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#FFF8F0",
   "theme_color": "#8ECAE6",
+  "categories": ["education", "kids"],
+  "lang": "ko",
   "icons": [
-    { "src": "icons/icon-192.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "icons/icon-192.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
