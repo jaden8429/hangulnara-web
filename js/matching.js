@@ -237,7 +237,8 @@ function showMatchingResult() {
   else { emoji = '💪'; msg = '괜찮아~ 다시 한 번 도전!'; }
 
   // 라운드 별점은 학습 별과 별도 카운트 — recordResult로 이미 학습 진도에 반영됨
-  document.getElementById('matchingPlay').innerHTML =
+  var play = document.getElementById('matchingPlay');
+  play.innerHTML =
     topBarHtml('goMatching()', '결과', '') +
     '<div class="match-result">' +
       '<div style="font-size:80px">' + emoji + '</div>' +
@@ -246,10 +247,13 @@ function showMatchingResult() {
       '</div>' +
       '<div class="match-result-msg">' + msg + '</div>' +
       '<div class="learn-actions" style="margin-top:24px">' +
-        '<button class="btn orange" onclick="startMatchingRound(\'' + s.poolKey + '\')">🔄 한 번 더</button>' +
-        '<button class="btn green" onclick="goMatching()">메뉴로</button>' +
+        '<button class="btn orange" id="matchAgainBtn">🔄 한 번 더</button>' +
+        '<button class="btn green" id="matchMenuBtn">메뉴로</button>' +
       '</div>' +
     '</div>';
+  var poolKey = s.poolKey;
+  play.querySelector('#matchAgainBtn').onclick = function() { startMatchingRound(poolKey); };
+  play.querySelector('#matchMenuBtn').onclick = goMatching;
   speakDarami(msg);
 }
 

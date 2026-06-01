@@ -740,69 +740,50 @@ function checkGate() {
   }
 }
 
+// === 보호자 대시보드 (섹션별 렌더러로 분할) ===
 function showParentDashboard() {
   var el = document.getElementById('parentContent');
-  var hardItems = getHardItems(3);
-  var dueCount = getReviewItems().length;
-
-  // 자주 틀린 글자 + 오프라인 활동 추천
-  var hardHtml = '';
-  if (hardItems.length > 0) {
-    hardHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap">';
-    hardItems.forEach(function(h) {
-      var status = h.passed ? '✓ 통과 (틀린 적 ' + h.fail + '회)' : '⚠ 미통과 (' + h.fail + '회 실패)';
-      hardHtml += '<div style="background:#FFF0E0;padding:12px 16px;border-radius:12px;min-width:120px">' +
-        '<div style="font-size:36px;font-weight:bold">' + h.item.char + '</div>' +
-        '<div style="font-size:13px;color:#7A6B5D">' + h.item.name + '</div>' +
-        '<div style="font-size:12px;color:#E57373;margin-top:4px">' + status + '</div>' +
-      '</div>';
-    });
-    hardHtml += '</div>';
-    // 오프라인 활동 추천
-    var firstChar = hardItems[0].item.char;
-    hardHtml += '<div style="margin-top:12px;background:#E8F5E9;padding:12px 16px;border-radius:12px;font-size:14px;color:#2E7D32">' +
-      '💡 오프라인 활동 추천: 냉장고 자석으로 "' + firstChar + '" 만들어보기 / "' + firstChar + '"으로 시작하는 단어 5개 함께 말해보기' +
-    '</div>';
-  } else {
-    hardHtml = '<div style="color:#7A6B5D">아직 틀린 글자가 없어요!</div>';
-  }
-
-  // 프로필 관리
-  var profiles = getProfiles();
-  var activeId = getActiveProfileId();
-  var profileHtml = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
-  profiles.forEach(function(p) {
-    var isActive = p.id === activeId;
-    profileHtml += '<button class="profile-chip ' + (isActive ? 'active' : '') + '" data-pid="' + p.id + '">' +
-      (isActive ? '✓ ' : '') + p.name +
-    '</button>';
-  });
-  profileHtml += '<button class="profile-chip add" id="profileAddBtn">+ 새 프로필</button>';
-  profileHtml += '</div>';
-
+  var profileCount = getProfiles().length;
+  // 셸 HTML: 섹션별 컨테이너만 미리 만들어 두고 각 renderer가 채움
   el.innerHTML =
-    '<h2 style="margin-bottom:8px">👨‍👩‍👧 프로필 (' + profiles.length + '명)</h2>' +
-    '<div id="profileArea">' + profileHtml + '</div>' +
+    '<h2 style="margin-bottom:8px">👨‍👩‍👧 프로필 (' + profileCount + '명)</h2>' +
+    '<div id="profileArea"></div>' +
     '<h2 style="margin:24px 0 16px">📊 학습 요약</h2>' +
-    '<div style="display:flex;gap:24px;font-size:18px;flex-wrap:wrap;margin-bottom:16px">' +
-      '<div>⭐ 총 별: ' + getTotalStars() + '개</div>' +
-      '<div>🎨 스티커: ' + getTotalStickers() + '개</div>' +
-      '<div>🔄 복습 대기: ' + dueCount + '개</div>' +
-    '</div>' +
+    '<div id="summaryArea"></div>' +
     '<h2 style="margin:24px 0 16px">⚠ 어려워하는 글자 TOP 3</h2>' +
-    '<div id="hardArea">' + hardHtml + '</div>' +
+    '<div id="hardArea"></div>' +
     '<h2 style="margin:24px 0 16px">📚 챕터별 진도</h2>' +
     '<div id="chapterProgressArea"></div>' +
     '<h2 style="margin:24px 0 16px">⚙ 설정</h2><div id="settingsArea"></div>' +
     '<h2 style="margin:24px 0 16px;color:#E57373">🗑 초기화</h2><div id="resetArea"></div>';
 
-  // 프로필 전환/추가 핸들러
-  document.querySelectorAll('.profile-chip[data-pid]').forEach(function(btn) {
+  _renderProfileChips(document.getElementById('profileArea'));
+  _renderSummary(document.getElementById('summaryArea'));
+  _renderHardItems(document.getElementById('hardArea'));
+  _renderChapterProgress(document.getElementById('chapterProgressArea'));
+  _renderSettings(document.getElementById('settingsArea'));
+  _renderResetAll(document.getElementById('resetArea'));
+
+  showScreen('parent');
+}
+
+function _renderProfileChips(host) {
+  var profiles = getProfiles();
+  var activeId = getActiveProfileId();
+  var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
+  profiles.forEach(function(p) {
+    var isActive = p.id === activeId;
+    html += '<button class="profile-chip ' + (isActive ? 'active' : '') + '" data-pid="' + p.id + '">' +
+      (isActive ? '✓ ' : '') + p.name + '</button>';
+  });
+  html += '<button class="profile-chip add" id="profileAddBtn">+ 새 프로필</button></div>';
+  host.innerHTML = html;
+
+  host.querySelectorAll('.profile-chip[data-pid]').forEach(function(btn) {
     btn.onclick = function() {
       var pid = btn.dataset.pid;
       if (pid === getActiveProfileId()) return;
       setActiveProfile(pid);
-      // 이름 동기화
       var p = getProfiles().find(function(x) { return x.id === pid; });
       var data = loadData();
       USER_NAME = (data.settings && data.settings.childName) || (p && p.name) || '친구';
@@ -810,7 +791,7 @@ function showParentDashboard() {
       showParentDashboard();
     };
   });
-  var addBtn = document.getElementById('profileAddBtn');
+  var addBtn = host.querySelector('#profileAddBtn');
   if (addBtn) addBtn.onclick = function() {
     var name = prompt('새 프로필 이름을 입력하세요', '');
     if (!name) return;
@@ -822,9 +803,42 @@ function showParentDashboard() {
     USER_NAME = name.trim();
     showParentDashboard();
   };
+}
 
-  // 챕터별 진도 + 초기화 버튼
-  var cpArea = document.getElementById('chapterProgressArea');
+function _renderSummary(host) {
+  var dueCount = getReviewItems().length;
+  host.innerHTML =
+    '<div style="display:flex;gap:24px;font-size:18px;flex-wrap:wrap;margin-bottom:16px">' +
+      '<div>⭐ 총 별: ' + getTotalStars() + '개</div>' +
+      '<div>🎨 스티커: ' + getTotalStickers() + '개</div>' +
+      '<div>🔄 복습 대기: ' + dueCount + '개</div>' +
+    '</div>';
+}
+
+function _renderHardItems(host) {
+  var hardItems = getHardItems(3);
+  if (hardItems.length === 0) {
+    host.innerHTML = '<div style="color:#7A6B5D">아직 틀린 글자가 없어요!</div>';
+    return;
+  }
+  var html = '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+  hardItems.forEach(function(h) {
+    var status = h.passed ? '✓ 통과 (틀린 적 ' + h.fail + '회)' : '⚠ 미통과 (' + h.fail + '회 실패)';
+    html += '<div style="background:#FFF0E0;padding:12px 16px;border-radius:12px;min-width:120px">' +
+      '<div style="font-size:36px;font-weight:bold">' + h.item.char + '</div>' +
+      '<div style="font-size:13px;color:#7A6B5D">' + h.item.name + '</div>' +
+      '<div style="font-size:12px;color:#E57373;margin-top:4px">' + status + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  var firstChar = hardItems[0].item.char;
+  html += '<div style="margin-top:12px;background:#E8F5E9;padding:12px 16px;border-radius:12px;font-size:14px;color:#2E7D32">' +
+    '💡 오프라인 활동 추천: 냉장고 자석으로 "' + firstChar + '" 만들어보기 / "' + firstChar + '"으로 시작하는 단어 5개 함께 말해보기' +
+  '</div>';
+  host.innerHTML = html;
+}
+
+function _renderChapterProgress(host) {
   CHAPTERS.forEach(function(ch) {
     var comp = getChapterCompletion(ch.id);
     var row = document.createElement('div');
@@ -838,8 +852,7 @@ function showParentDashboard() {
         '</div>' +
       '</div>' +
       '<div class="bar"><div class="fill" style="width:' + (comp * 100) + '%"></div></div>';
-    var resetBtn = row.querySelector('.reset-chapter-btn');
-    resetBtn.onclick = (function(chId, chTitle) {
+    row.querySelector('.reset-chapter-btn').onclick = (function(chId, chTitle) {
       return function() {
         if (confirm(chTitle + ' 챕터의 모든 진도를 초기화할까요?')) {
           resetChapter(chId);
@@ -848,14 +861,14 @@ function showParentDashboard() {
         }
       };
     })(ch.id, ch.title);
-    cpArea.appendChild(row);
+    host.appendChild(row);
   });
+}
 
-  // 설정
-  var sa = document.getElementById('settingsArea');
+function _renderSettings(host) {
   var d = loadData();
 
-  // 이름 설정
+  // 이름 입력
   var nameRow = document.createElement('div');
   nameRow.className = 'setting-row';
   nameRow.innerHTML = '<label>아이 이름</label>';
@@ -873,41 +886,40 @@ function showParentDashboard() {
     showToast(USER_NAME + ' (으)로 설정했어요!', 1500);
   };
   nameRow.appendChild(nameInput);
-  sa.appendChild(nameRow);
+  host.appendChild(nameRow);
 
-  // 토글 설정
-  function makeToggle(label, key, value) {
-    var row = document.createElement('div');
-    row.className = 'setting-row';
-    row.innerHTML = '<label>' + label + '</label>';
-    var btn = document.createElement('button');
-    btn.className = 'toggle ' + (value ? 'on' : 'off');
-    btn.onclick = function() {
-      var data = loadData();
-      data.settings[key] = !data.settings[key];
-      saveData(data);
-      btn.className = 'toggle ' + (data.settings[key] ? 'on' : 'off');
-    };
-    row.appendChild(btn);
-    sa.appendChild(row);
-  }
-  makeToggle('TTS 음성 안내', 'tts', d.settings.tts);
-  makeToggle('효과음', 'sound', d.settings.sound);
+  // 토글 (TTS / 효과음)
+  _appendToggle(host, 'TTS 음성 안내', 'tts', d.settings.tts);
+  _appendToggle(host, '효과음', 'sound', d.settings.sound);
+}
 
-  // 전체 초기화
-  var resetArea = document.getElementById('resetArea');
-  var resetAllBtn = document.createElement('button');
-  resetAllBtn.className = 'btn pink';
-  resetAllBtn.style.cssText = 'font-size:16px;min-height:48px;min-width:auto;padding:12px 24px;';
-  resetAllBtn.textContent = '🗑️ 모든 학습 데이터 초기화';
-  resetAllBtn.onclick = function() {
+function _appendToggle(host, label, key, value) {
+  var row = document.createElement('div');
+  row.className = 'setting-row';
+  row.innerHTML = '<label>' + label + '</label>';
+  var btn = document.createElement('button');
+  btn.className = 'toggle ' + (value ? 'on' : 'off');
+  btn.onclick = function() {
+    var data = loadData();
+    data.settings[key] = !data.settings[key];
+    saveData(data);
+    btn.className = 'toggle ' + (data.settings[key] ? 'on' : 'off');
+  };
+  row.appendChild(btn);
+  host.appendChild(row);
+}
+
+function _renderResetAll(host) {
+  var btn = document.createElement('button');
+  btn.className = 'btn pink';
+  btn.style.cssText = 'font-size:16px;min-height:48px;min-width:auto;padding:12px 24px;';
+  btn.textContent = '🗑️ 모든 학습 데이터 초기화';
+  btn.onclick = function() {
     if (confirm('정말 모든 학습 데이터를 초기화할까요?\n별, 스티커, 진도가 모두 삭제됩니다.')) {
       resetAll();
       showParentDashboard();
       showToast('전체 초기화 완료', 1500);
     }
   };
-  resetArea.appendChild(resetAllBtn);
-
-  showScreen('parent');
+  host.appendChild(btn);
 }

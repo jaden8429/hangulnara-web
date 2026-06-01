@@ -190,16 +190,20 @@ function onComposeAnswer(choice, btn, correctSyllable) {
 
 function showComposeResult() {
   var s = composeState;
-  document.getElementById('composePlay').innerHTML =
+  var play = document.getElementById('composePlay');
+  play.innerHTML =
     topBarHtml('goCompose()', '완료!', '') +
     '<div class="match-result">' +
       '<div style="font-size:80px">🎉</div>' +
       '<div class="match-result-stars">' + s.lesson.title + ' 완료!</div>' +
       '<div class="match-result-msg">자모가 만나면 음절이 돼! 잘 했어~</div>' +
       '<div class="learn-actions" style="margin-top:24px">' +
-        '<button class="btn orange" onclick="startCompose(\'' + s.lesson.id + '\')">🔄 다시 하기</button>' +
-        '<button class="btn green" onclick="goCompose()">메뉴로</button>' +
+        '<button class="btn orange" id="composeAgainBtn">🔄 다시 하기</button>' +
+        '<button class="btn green" id="composeMenuBtn">메뉴로</button>' +
       '</div>' +
     '</div>';
+  var lessonId = s.lesson.id;
+  play.querySelector('#composeAgainBtn').onclick = function() { startCompose(lessonId); };
+  play.querySelector('#composeMenuBtn').onclick = goCompose;
   speakDarami('와~ 자모 합성 끝! 잘 했어!');
 }

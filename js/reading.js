@@ -88,7 +88,7 @@ function renderReading() {
               showToast(msg + ' 잘 읽었어!', 2000);
             }, 600);
           }
-          renderReading();
+          _updateWordClasses(); // 전체 DOM 재생성 대신 클래스만 토글
         } else {
           speakDarami('아직 다른 단어가 먼저야~');
         }
@@ -104,6 +104,18 @@ function renderReading() {
   }
 }
 
+// 재생/탭 중에는 .reading-word 버튼이 이미 렌더링되어 있으므로
+// DOM 전체 재생성 대신 .active/.tapped 클래스만 토글 (오디오/시각 지터 방지)
+function _updateWordClasses() {
+  var s = readingState;
+  if (!s) return;
+  var buttons = document.querySelectorAll('.reading-word');
+  buttons.forEach(function(btn, i) {
+    btn.classList.toggle('active', i === s.activeWord);
+    btn.classList.toggle('tapped', s.mode === 'ME' && i < s.tappedCount);
+  });
+}
+
 function playSentenceAuto() {
   var s = readingState;
   if (!s) return;
@@ -113,13 +125,13 @@ function playSentenceAuto() {
     if (!readingState) return;
     if (i >= words.length) {
       s.activeWord = -1;
-      renderReading();
+      _updateWordClasses();
       // 마무리 멘트
       setTimeout(function() { speakDarami('따라 읽어볼까~?'); }, 600);
       return;
     }
     s.activeWord = i;
-    renderReading();
+    _updateWordClasses();
     speak(words[i]);
     setTimeout(function() { step(i + 1); }, 900);
   }
