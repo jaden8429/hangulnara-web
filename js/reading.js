@@ -54,11 +54,7 @@ function renderReading() {
   });
 
   document.getElementById('readingPlay').innerHTML =
-    '<div class="top-bar">' +
-      '<button class="back-btn" onclick="goReading()">←</button>' +
-      '<span class="title">📖 문장 읽기</span>' +
-      '<div class="mascot-mini">🐿️</div>' +
-    '</div>' +
+    topBarHtml('goReading()', '📖 문장 읽기', '<div class="mascot-mini">🐿️</div>') +
     '<div class="reading-content">' +
       '<div class="reading-emoji-big">' + sent.emoji + '</div>' +
       '<div class="reading-sentence">' + wordsHtml + '</div>' +

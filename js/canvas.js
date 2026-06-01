@@ -149,39 +149,35 @@ class WritingCanvas {
   lock() { this._locked = true; this._cancelAutoTimer(); }
   unlock() { this._locked = false; }
 
-  // 정답 피드백: 초록 테두리 플래시
-  flashCorrect(callback) {
+  // 정답/오답 공용 플래시 헬퍼 (테두리 색 + 옵션 흔들림 + 옵션 클리어)
+  _flash(opts, callback) {
     this.lock();
     const wrap = this.canvas.parentElement;
+    const baseShadow = '0 4px 16px rgba(0,0,0,0.1)';
     if (wrap) {
       wrap.style.transition = 'box-shadow 0.3s ease';
-      wrap.style.boxShadow = '0 0 0 6px #A8E6CF, 0 4px 16px rgba(0,0,0,0.1)';
+      wrap.style.boxShadow = '0 0 0 ' + opts.ringWidth + 'px ' + opts.ringColor + ', ' + baseShadow;
+      if (opts.shake) wrap.style.animation = 'shakeCanvas 0.4s ease';
     }
     setTimeout(() => {
-      if (wrap) { wrap.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; }
+      if (wrap) {
+        wrap.style.boxShadow = baseShadow;
+        if (opts.shake) wrap.style.animation = '';
+      }
+      if (opts.clearAfter) this.clear();
       this.unlock();
       if (callback) callback();
-    }, 800);
+    }, opts.duration);
+  }
+
+  // 정답 피드백: 초록 테두리 플래시
+  flashCorrect(callback) {
+    this._flash({ ringColor: '#A8E6CF', ringWidth: 6, duration: 800 }, callback);
   }
 
   // 오답 피드백: 빨간 흔들림 + 클리어
   flashWrong(callback) {
-    this.lock();
-    const wrap = this.canvas.parentElement;
-    if (wrap) {
-      wrap.style.transition = 'box-shadow 0.3s ease';
-      wrap.style.boxShadow = '0 0 0 4px #FFADAD, 0 4px 16px rgba(0,0,0,0.1)';
-      wrap.style.animation = 'shakeCanvas 0.4s ease';
-    }
-    setTimeout(() => {
-      if (wrap) {
-        wrap.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
-        wrap.style.animation = '';
-      }
-      this.clear();
-      this.unlock();
-      if (callback) callback();
-    }, 900);
+    this._flash({ ringColor: '#FFADAD', ringWidth: 4, shake: true, clearAfter: true, duration: 900 }, callback);
   }
 
   redraw() {

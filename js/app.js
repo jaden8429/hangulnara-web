@@ -68,16 +68,29 @@ function showToast(msg, duration) {
   t._timer = setTimeout(function() { t.style.opacity = '0'; }, duration);
 }
 
-// === 스플래시 → 홈 ===
-setTimeout(function() {
+// === 공용 헬퍼 (matching/compose/reading에서 공유) ===
+function shuffleArr(arr) { return arr.slice().sort(function() { return Math.random() - 0.5; }); }
+function topBarHtml(backFn, title, rightHtml) {
+  return '<div class="top-bar">' +
+    '<button class="back-btn" onclick="' + backFn + '">←</button>' +
+    '<span class="title">' + title + '</span>' +
+    (rightHtml || '') +
+    '</div>';
+}
+
+// === 홈 렌더 공통 (스플래시/goHome 공유) ===
+function renderHome(speakDelay) {
   showScreen('home');
   document.getElementById('homeStars').textContent = getTotalStars();
   var greeting = getHomeGreeting();
   var bubble = document.getElementById('homeBubble');
   if (bubble) bubble.textContent = greeting;
-  // 다람이가 귀여운 목소리로 인사!
-  setTimeout(function() { speakDarami(greeting); }, 300);
-}, 2000);
+  if (speakDelay > 0) setTimeout(function() { speakDarami(greeting); }, speakDelay);
+  else speakDarami(greeting);
+}
+
+// === 스플래시 → 홈 ===
+setTimeout(function() { renderHome(300); }, 2000);
 
 // 다람이 캐릭터 인사말 (귀여운 말투)
 function getHomeGreeting() {
@@ -94,14 +107,7 @@ function getHomeGreeting() {
   return msgs[Math.random() * msgs.length | 0];
 }
 
-function goHome() {
-  showScreen('home');
-  document.getElementById('homeStars').textContent = getTotalStars();
-  var greeting = getHomeGreeting();
-  var bubble = document.getElementById('homeBubble');
-  if (bubble) bubble.textContent = greeting;
-  speakDarami(greeting);
-}
+function goHome() { renderHome(0); }
 
 // === 챕터 선택 ===
 function goChapters() {
@@ -336,16 +342,25 @@ function showAutoIndicator(show) {
   if (ind) ind.className = 'auto-eval-indicator' + (show ? ' active' : '');
 }
 
+// 캔버스 단계(Trace/Free) 공통: 손그림 이모지 힌트 블록
+function emojiHintHtml(item) {
+  return item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
+}
+
+// 캔버스 단계 공통: 콜백 안에서 캔버스가 살아있고 파괴되지 않았는지 확인
+function canvasAlive() {
+  return writingCanvas && !writingCanvas._destroyed;
+}
+
 // === TRACE 단계: 따라쓰기 (가이드 보이는 상태에서 작성 → 자동 평가) ===
 function renderTrace(el, item) {
   // 이전 캔버스 반드시 파기 (타이머/리스너 정리)
   if (writingCanvas) { writingCanvas.destroy(); writingCanvas = null; }
   var c = createCanvasHtml();
-  var emojiHint = item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
 
   el.innerHTML =
     '<div class="canvas-with-hint">' +
-      emojiHint +
+      emojiHintHtml(item) +
       '<div class="canvas-layout">' +
         '<div class="canvas-title" id="traceMsg">따라 써보자!' + (traceRetry > 0 ? ' (' + traceRetry + '번째 다시)' : '') + '</div>' +
         c.html +
@@ -381,11 +396,11 @@ function autoEvalTrace() {
 
   if (result.correct) {
     writingCanvas.flashCorrect(function() {
-      if (!writingCanvas || writingCanvas._destroyed) return;
+      if (!canvasAlive()) return;
       isEvaluating = false;
       showToast('잘했어! 이제 혼자 써보자!', 1000);
       setTimeout(function() {
-        if (!writingCanvas || writingCanvas._destroyed) return;
+        if (!canvasAlive()) return;
         currentStage = 'FREE';
         renderStage();
       }, 300);
@@ -394,18 +409,18 @@ function autoEvalTrace() {
     traceRetry++;
     if (traceRetry >= 3) {
       writingCanvas.flashWrong(function() {
-        if (!writingCanvas || writingCanvas._destroyed) return;
+        if (!canvasAlive()) return;
         isEvaluating = false;
         showToast('괜찮아! 혼자 써보자!', 1000);
         setTimeout(function() {
-          if (!writingCanvas || writingCanvas._destroyed) return;
+          if (!canvasAlive()) return;
           currentStage = 'FREE';
           renderStage();
         }, 300);
       });
     } else {
       writingCanvas.flashWrong(function() {
-        if (!writingCanvas || writingCanvas._destroyed) return;
+        if (!canvasAlive()) return;
         isEvaluating = false;
         var msg = document.getElementById('traceMsg');
         if (msg) msg.textContent = '다시 써보자! (' + traceRetry + '번째 다시)';
@@ -420,11 +435,10 @@ function renderFree(el, item) {
   // 이전 캔버스 반드시 파기 (타이머/리스너 정리)
   if (writingCanvas) { writingCanvas.destroy(); writingCanvas = null; }
   var c = createCanvasHtml();
-  var emojiHint = item.emoji ? '<div class="canvas-emoji-hint"><div class="canvas-emoji-pic">' + item.emoji + '</div><div class="canvas-emoji-label">' + item.name + '</div></div>' : '';
 
   el.innerHTML =
     '<div class="canvas-with-hint">' +
-      emojiHint +
+      emojiHintHtml(item) +
       '<div class="canvas-layout">' +
         '<div class="canvas-title" id="freeMsg">혼자 써보자! "' + item.name + '"</div>' +
         (freeRetry > 0 ? '<div class="canvas-subtitle">다시 도전! (' + freeRetry + '번째)</div>' : '') +
@@ -471,7 +485,7 @@ function autoEvalFree() {
     recordResult(item.id, true, result.stars);
     lastResult = result;
     writingCanvas.flashCorrect(function() {
-      if (!writingCanvas || writingCanvas._destroyed) return;
+      if (!canvasAlive()) return;
       isEvaluating = false;
       currentStage = 'PRAISE';
       renderStage();
@@ -482,14 +496,14 @@ function autoEvalFree() {
     if (freeRetry >= 3) {
       lastResult = { correct: false, stars: 0 };
       writingCanvas.flashWrong(function() {
-        if (!writingCanvas || writingCanvas._destroyed) return;
+        if (!canvasAlive()) return;
         isEvaluating = false;
         currentStage = 'PRAISE';
         renderStage();
       });
     } else {
       writingCanvas.flashWrong(function() {
-        if (!writingCanvas || writingCanvas._destroyed) return;
+        if (!canvasAlive()) return;
         isEvaluating = false;
         var msg = document.getElementById('freeMsg');
         if (msg) msg.textContent = '다시 도전! "' + item.name + '" (' + freeRetry + '번째)';

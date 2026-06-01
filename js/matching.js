@@ -85,8 +85,7 @@ function startMatchingRound(poolKey) {
   var allItems = pool.items();
 
   // 섞고 ROUND_SIZE개 선택
-  var shuffled = allItems.slice().sort(function() { return Math.random() - 0.5; });
-  var questions = shuffled.slice(0, Math.min(ROUND_SIZE, shuffled.length));
+  var questions = shuffleArr(allItems).slice(0, Math.min(ROUND_SIZE, allItems.length));
 
   matchState = {
     poolKey: poolKey,
@@ -119,12 +118,11 @@ function renderMatchingQuestion() {
     var rest = s.allItems.filter(function(it) {
       return it.id !== q.id && !distractors.find(function(d) { return d.id === it.id; });
     });
-    rest.sort(function() { return Math.random() - 0.5; });
-    distractors = distractors.concat(rest.slice(0, (CHOICE_COUNT - 1) - distractors.length));
+    distractors = distractors.concat(shuffleArr(rest).slice(0, (CHOICE_COUNT - 1) - distractors.length));
   }
   var choices = distractors.slice(0, CHOICE_COUNT - 1);
   choices.push(q);
-  choices.sort(function() { return Math.random() - 0.5; });
+  choices = shuffleArr(choices);
 
   s.retryUsed = false;
   s.answered = false;
@@ -137,11 +135,8 @@ function renderMatchingQuestion() {
   var isWordPool = (s.poolKey === 'words');
 
   var html =
-    '<div class="top-bar">' +
-      '<button class="back-btn" onclick="exitMatching()">←</button>' +
-      '<span class="title">' + num + ' / ' + total + '</span>' +
-      '<span class="badge"><span style="color:#FFD166">⭐</span> ' + s.correctCount + '</span>' +
-    '</div>' +
+    topBarHtml('exitMatching()', num + ' / ' + total,
+      '<span class="badge"><span style="color:#FFD166">⭐</span> ' + s.correctCount + '</span>') +
     '<div class="progress-bar"><div class="progress-fill" style="width:' + ((num/total)*100) + '%"></div></div>' +
     '<div class="match-content">' +
       '<div class="match-prompt">' +
@@ -171,14 +166,11 @@ function renderMatchingQuestion() {
     choiceWrap.appendChild(btn);
   });
 
-  // 자음/모음 풀: 자동 재생
+  // 자동 재생 (단어 풀이든 자/모음이든 동일하게 400ms 후 발음)
+  setTimeout(function() { speak(q.tts); }, 400);
   if (!isWordPool) {
-    setTimeout(function() { speak(q.tts); }, 400);
     var pb = document.getElementById('matchPlayBtn');
     if (pb) pb.onclick = function() { speak(q.tts); };
-  } else {
-    // 단어 풀: 다람이가 단어 발음
-    setTimeout(function() { speak(q.tts); }, 400);
   }
 }
 
@@ -244,16 +236,9 @@ function showMatchingResult() {
   else if (pct >= 0.5) { emoji = '😊'; msg = '잘 했어! 한 번 더 해볼까?'; }
   else { emoji = '💪'; msg = '괜찮아~ 다시 한 번 도전!'; }
 
-  // 누적 별 추가
-  var d = loadData();
-  // 라운드 별점은 학습 별과 별도 카운트 — 누적 별에는 합산하지 않고 라운드 결과만 표시
-  // (recordResult로 이미 학습 진도에 반영됨)
-
+  // 라운드 별점은 학습 별과 별도 카운트 — recordResult로 이미 학습 진도에 반영됨
   document.getElementById('matchingPlay').innerHTML =
-    '<div class="top-bar">' +
-      '<button class="back-btn" onclick="goMatching()">←</button>' +
-      '<span class="title">결과</span>' +
-    '</div>' +
+    topBarHtml('goMatching()', '결과', '') +
     '<div class="match-result">' +
       '<div style="font-size:80px">' + emoji + '</div>' +
       '<div class="match-result-stars">' +

@@ -3,30 +3,29 @@ const LEGACY_KEY = 'hangulnara';
 const PROFILES_KEY = 'hangulnara.profiles';
 const ACTIVE_KEY = 'hangulnara.active';
 
+// 안전한 localStorage 래퍼 (try/catch 일원화)
+function lsGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+function lsRemove(key) { try { localStorage.removeItem(key); } catch(e) {} }
+
 function getProfiles() {
-  try {
-    var raw = localStorage.getItem(PROFILES_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
+  var raw = lsGet(PROFILES_KEY);
+  if (raw) {
+    try { return JSON.parse(raw); } catch(e) {}
+  }
   return [{ id: 'p1', name: '서연' }];
 }
 
 function saveProfiles(profiles) {
-  try { localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles)); }
-  catch(e) {}
+  lsSet(PROFILES_KEY, JSON.stringify(profiles));
 }
 
 function getActiveProfileId() {
-  try {
-    var id = localStorage.getItem(ACTIVE_KEY);
-    if (id) return id;
-  } catch(e) {}
-  return 'p1';
+  return lsGet(ACTIVE_KEY) || 'p1';
 }
 
 function setActiveProfile(id) {
-  try { localStorage.setItem(ACTIVE_KEY, id); }
-  catch(e) {}
+  lsSet(ACTIVE_KEY, id);
   _memoryStore = null; // 캐시 무효화 → 다음 loadData에서 새 프로필 로드
 }
 
@@ -43,7 +42,7 @@ function deleteProfile(id) {
   if (profiles.length <= 1) return false; // 최소 1개 보장
   profiles = profiles.filter(function(p) { return p.id !== id; });
   saveProfiles(profiles);
-  try { localStorage.removeItem('hangulnara.data.' + id); } catch(e) {}
+  lsRemove('hangulnara.data.' + id);
   if (getActiveProfileId() === id) setActiveProfile(profiles[0].id);
   return true;
 }
@@ -54,16 +53,11 @@ function getStorageKey() {
 
 // 레거시 데이터 1회 마이그레이션
 function _migrateLegacy() {
-  try {
-    var legacy = localStorage.getItem(LEGACY_KEY);
-    if (!legacy) return;
-    var profiles = getProfiles();
-    var firstKey = 'hangulnara.data.' + profiles[0].id;
-    if (!localStorage.getItem(firstKey)) {
-      localStorage.setItem(firstKey, legacy);
-    }
-    localStorage.removeItem(LEGACY_KEY);
-  } catch(e) {}
+  var legacy = lsGet(LEGACY_KEY);
+  if (!legacy) return;
+  var firstKey = 'hangulnara.data.' + getProfiles()[0].id;
+  if (!lsGet(firstKey)) lsSet(firstKey, legacy);
+  lsRemove(LEGACY_KEY);
 }
 _migrateLegacy();
 
@@ -71,21 +65,16 @@ _migrateLegacy();
 var _memoryStore = null;
 
 function loadData() {
-  try {
-    var raw = localStorage.getItem(getStorageKey());
-    if (raw) return JSON.parse(raw);
-  } catch(e) { /* fall through */ }
-  if (_memoryStore) return _memoryStore;
-  return defaultData();
+  var raw = lsGet(getStorageKey());
+  if (raw) {
+    try { return JSON.parse(raw); } catch(e) {}
+  }
+  return _memoryStore || defaultData();
 }
 
 function saveData(data) {
   _memoryStore = data;
-  try {
-    localStorage.setItem(getStorageKey(), JSON.stringify(data));
-  } catch(e) {
-    console.warn('localStorage save failed, using memory only:', e.name);
-  }
+  lsSet(getStorageKey(), JSON.stringify(data));
 }
 
 function defaultData() {
@@ -243,34 +232,10 @@ function resetAll() {
   saveData(defaultData());
 }
 
-function resetChapter(chapterId) {
-  var chapter = CHAPTERS.find(function(c) { return c.id === chapterId; });
-  if (!chapter) return;
-  var d = loadData();
-  chapter.lessons.forEach(function(lid) {
-    var lesson = LESSONS[lid];
-    if (!lesson) return;
-    // 해당 레슨의 아이템 진도 삭제
-    lesson.items.forEach(function(it) {
-      if (d.progress[it.id]) {
-        d.stars -= (d.progress[it.id].bestStars || 0);
-        delete d.progress[it.id];
-      }
-    });
-    // 스티커 회수
-    if (d.awardedStickers && d.awardedStickers[lid]) {
-      d.stickers = Math.max(0, d.stickers - 1);
-      delete d.awardedStickers[lid];
-    }
-  });
-  d.stars = Math.max(0, d.stars);
-  saveData(d);
-}
-
-function resetLesson(lessonId) {
+// 단일 레슨 데이터 삭제 (resetChapter/resetLesson 공통 헬퍼) — saveData는 호출자가 수행
+function _wipeLessonInPlace(d, lessonId) {
   var lesson = LESSONS[lessonId];
   if (!lesson) return;
-  var d = loadData();
   lesson.items.forEach(function(it) {
     if (d.progress[it.id]) {
       d.stars -= (d.progress[it.id].bestStars || 0);
@@ -281,6 +246,21 @@ function resetLesson(lessonId) {
     d.stickers = Math.max(0, d.stickers - 1);
     delete d.awardedStickers[lessonId];
   }
+}
+
+function resetChapter(chapterId) {
+  var chapter = CHAPTERS.find(function(c) { return c.id === chapterId; });
+  if (!chapter) return;
+  var d = loadData();
+  chapter.lessons.forEach(function(lid) { _wipeLessonInPlace(d, lid); });
+  d.stars = Math.max(0, d.stars);
+  saveData(d);
+}
+
+function resetLesson(lessonId) {
+  if (!LESSONS[lessonId]) return;
+  var d = loadData();
+  _wipeLessonInPlace(d, lessonId);
   d.stars = Math.max(0, d.stars);
   saveData(d);
 }
@@ -288,13 +268,13 @@ function resetLesson(lessonId) {
 function getFailedItems() {
   var d = loadData();
   var items = [];
+  var lessonIds = Object.keys(LESSONS);
   Object.keys(d.progress).forEach(function(id) {
     var p = d.progress[id];
-    if (p.fail > 0 && !p.passed) {
-      for (var lid of Object.keys(LESSONS)) {
-        var item = LESSONS[lid].items.find(function(it) { return it.id === id; });
-        if (item) { items.push(item); break; }
-      }
+    if (!(p.fail > 0 && !p.passed)) return;
+    for (var i = 0; i < lessonIds.length; i++) {
+      var item = LESSONS[lessonIds[i]].items.find(function(it) { return it.id === id; });
+      if (item) { items.push(item); return; }
     }
   });
   return items;

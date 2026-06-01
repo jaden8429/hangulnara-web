@@ -67,11 +67,7 @@ function renderCompose() {
   var num = s.index + 1;
 
   var topBar =
-    '<div class="top-bar">' +
-      '<button class="back-btn" onclick="goCompose()">←</button>' +
-      '<span class="title">' + num + ' / ' + total + ' — ' + s.lesson.title + '</span>' +
-      '<div class="mascot-mini">🐿️</div>' +
-    '</div>' +
+    topBarHtml('goCompose()', num + ' / ' + total + ' — ' + s.lesson.title, '<div class="mascot-mini">🐿️</div>') +
     '<div class="progress-bar"><div class="progress-fill" style="width:' + ((num/total)*100) + '%"></div></div>';
 
   var html = topBar;
@@ -128,14 +124,15 @@ function renderCompose() {
   }
   else if (s.stage === 'QUIZ') {
     // 같은 모음 다른 자음 보기 3개 중 정답 고르기 (사고형 변별)
-    var distractorChos = CHOSEONG.filter(function(c) {
-      return c !== pair.c && ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'].indexOf(c) >= 0;
-    }).sort(function() { return Math.random() - 0.5; }).slice(0, 2);
+    var simpleChos = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    var distractorChos = shuffleArr(CHOSEONG.filter(function(c) {
+      return c !== pair.c && simpleChos.indexOf(c) >= 0;
+    })).slice(0, 2);
     var quizChars = distractorChos.map(function(c) {
       return { char: composeSyllable(c, pair.v), cho: c };
     });
     quizChars.push({ char: syllable, cho: pair.c, correct: true });
-    quizChars.sort(function() { return Math.random() - 0.5; });
+    quizChars = shuffleArr(quizChars);
 
     html += '<div class="compose-content">' +
       '<div class="compose-mascot">' +
@@ -194,10 +191,7 @@ function onComposeAnswer(choice, btn, correctSyllable) {
 function showComposeResult() {
   var s = composeState;
   document.getElementById('composePlay').innerHTML =
-    '<div class="top-bar">' +
-      '<button class="back-btn" onclick="goCompose()">←</button>' +
-      '<span class="title">완료!</span>' +
-    '</div>' +
+    topBarHtml('goCompose()', '완료!', '') +
     '<div class="match-result">' +
       '<div style="font-size:80px">🎉</div>' +
       '<div class="match-result-stars">' + s.lesson.title + ' 완료!</div>' +
