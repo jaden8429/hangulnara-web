@@ -1,15 +1,16 @@
 // === 짧은 문장 읽기 (Phase 4) ===
 // 단어 → 문장으로 확장. 단어 단위 하이라이트 + 음성 + 내가 읽기 모드
 
+// 어절(띄어쓰기 단위) 기준. 조사는 명사에 붙여서 한글 표준 띄어쓰기와 일치
 var SENTENCES = [
-  { id: 'r_appa', emoji: '👨', words: ['아빠', '가', '와요'], hint: '아빠가 와요!' },
-  { id: 'r_eomma', emoji: '👩', words: ['엄마', '가', '예뻐요'], hint: '엄마가 예뻐요!' },
-  { id: 'r_gae', emoji: '🐕', words: ['개', '가', '짖어요'], hint: '개가 짖어요!' },
-  { id: 'r_nabi', emoji: '🦋', words: ['나비', '가', '날아요'], hint: '나비가 날아요!' },
-  { id: 'r_san', emoji: '⛰️', words: ['산', '이', '높아요'], hint: '산이 높아요!' },
-  { id: 'r_mul', emoji: '💧', words: ['물', '이', '맑아요'], hint: '물이 맑아요!' },
-  { id: 'r_dal', emoji: '🌙', words: ['달', '이', '밝아요'], hint: '달이 밝아요!' },
-  { id: 'r_gicha', emoji: '🚂', words: ['기차', '가', '와요'], hint: '기차가 와요!' },
+  { id: 'r_appa', emoji: '👨', words: ['아빠가', '와요'], hint: '아빠가 와요!' },
+  { id: 'r_eomma', emoji: '👩', words: ['엄마가', '예뻐요'], hint: '엄마가 예뻐요!' },
+  { id: 'r_gae', emoji: '🐕', words: ['개가', '짖어요'], hint: '개가 짖어요!' },
+  { id: 'r_nabi', emoji: '🦋', words: ['나비가', '날아요'], hint: '나비가 날아요!' },
+  { id: 'r_san', emoji: '⛰️', words: ['산이', '높아요'], hint: '산이 높아요!' },
+  { id: 'r_mul', emoji: '💧', words: ['물이', '맑아요'], hint: '물이 맑아요!' },
+  { id: 'r_dal', emoji: '🌙', words: ['달이', '밝아요'], hint: '달이 밝아요!' },
+  { id: 'r_gicha', emoji: '🚂', words: ['기차가', '와요'], hint: '기차가 와요!' },
 ];
 
 var readingState = null;

@@ -50,6 +50,34 @@ initTTS();
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
+  // 화면 전환 시 잔존 토스트 즉시 숨김 (scope 버그 방지)
+  var t = document.getElementById('_toast');
+  if (t) {
+    t.style.opacity = '0';
+    if (t._timer) clearTimeout(t._timer);
+  }
+  // 학습 화면 진입 시 세션 한도 체크 (홈/보호자/스플래시는 예외)
+  if (['learning','matchingPlay','composePlay','readingPlay','reading','compose','matching','review','chapters','lessons'].indexOf(id) >= 0) {
+    _checkSessionLimit();
+  }
+}
+
+// 세션 시작 시각 + dailyLimit (분) 시행
+var _sessionStartAt = Date.now();
+function _checkSessionLimit() {
+  var d = loadData();
+  var limit = (d.settings && d.settings.dailyLimit) || 30;
+  var elapsedMin = (Date.now() - _sessionStartAt) / 60000;
+  if (elapsedMin >= limit && !window._sessionWarned) {
+    window._sessionWarned = true;
+    var msg = '오늘 ' + limit + '분 공부했어! 다람이가 잠깐 쉬자고 했어~ 🐿️';
+    speakDarami('오늘 많이 공부했어! 잠깐 쉬자~');
+    showToast(msg, 4000);
+  }
+}
+function _resetSession() {
+  _sessionStartAt = Date.now();
+  window._sessionWarned = false;
 }
 
 // === 토스트 피드백 ===
@@ -87,6 +115,34 @@ function renderHome(speakDelay) {
   if (bubble) bubble.textContent = greeting;
   if (speakDelay > 0) setTimeout(function() { speakDarami(greeting); }, speakDelay);
   else speakDarami(greeting);
+  // 어댑티브 추천 배너 (오늘 뭘 할지 결정 부담 ↓)
+  _renderRecommendation();
+}
+
+// 어댑티브 추천 — 복습 우선, 다음 미완료 챕터, 신규 학습 순
+function _renderRecommendation() {
+  var host = document.getElementById('homeRecommend');
+  if (!host) return;
+  var due = getReviewItems();
+  if (due.length >= 3) {
+    host.innerHTML = '🐿️ 다람이 추천: 복습 ' + due.length + '개가 기다려요! <button class="btn yellow recommend-go" id="recGo">🔄 복습하기</button>';
+    var btn = document.getElementById('recGo');
+    if (btn) btn.onclick = goReview;
+    return;
+  }
+  // 다음 미완료 챕터 찾기
+  for (var i = 0; i < CHAPTERS.length; i++) {
+    if (isChapterUnlocked(i) && getChapterCompletion(CHAPTERS[i].id) < 1) {
+      var ch = CHAPTERS[i];
+      host.innerHTML = '🐿️ 오늘은 "' + ch.title + '" 단계 이어가볼까? <button class="btn blue recommend-go" id="recGo">📝 학습하기</button>';
+      var bt = document.getElementById('recGo');
+      if (bt) bt.onclick = function(){ goLessons(ch.id); };
+      return;
+    }
+  }
+  host.innerHTML = '🐿️ 모든 단계 완료! 새 친구를 만나보자~ <button class="btn green recommend-go" id="recGo">🪄 글자 만들기</button>';
+  var b2 = document.getElementById('recGo');
+  if (b2) b2.onclick = goCompose;
 }
 
 // === 스플래시 → 홈 ===
@@ -139,6 +195,15 @@ function goChapters() {
     };
     list.appendChild(card);
   });
+  // 테마학습 카드 — 챕터 학습과 같은 맥락에 놓음 (홈 메뉴 인지 부담 ↓)
+  var themeCard = document.createElement('div');
+  themeCard.className = 'chapter-card chapter-theme';
+  themeCard.innerHTML =
+    '<div class="emoji">🎨</div>' +
+    '<div class="name">테마학습</div>' +
+    '<div class="lock-hint">동물·음식·자연…</div>';
+  themeCard.onclick = function() { goThemes(); };
+  list.appendChild(themeCard);
   showScreen('chapters');
 }
 
@@ -247,6 +312,7 @@ function renderListen(el, item) {
         (item.emoji ? '<div style="font-size:min(80px,10vw);animation:float 2s ease-in-out infinite">' + item.emoji + '</div>' : '') +
         '<div class="char-display large float-anim" style="background:#CBE7F5">' + item.char + '</div>' +
         '<div class="learn-name">' + item.name + (item.emoji ? ' ' + item.emoji : '') + '</div>' +
+        (item.phon ? '<div class="learn-phon">소릿값: [' + item.phon + ']</div>' : '') +
         (item.word ? '<div class="learn-word">' + item.char + ' → ' + item.word + '</div>' : '') +
         '<div class="learn-actions">' +
           '<button class="btn icon lg yellow" id="speakBtn">🔊</button>' +
@@ -256,9 +322,12 @@ function renderListen(el, item) {
     '</div>';
   document.getElementById('speakBtn').onclick = speakItem;
   document.getElementById('listenNextBtn').onclick = function() { currentStage = 'GUIDED'; renderStage(); };
-  // 다람이 멘트 → 글자 발음 순서로
+  // 다람이 멘트 → 이름 → 음가 순서 (음가는 자음만)
   speakDarami(mascotMsg);
   setTimeout(function() { speak(item.tts); }, 2000);
+  if (item.phon) {
+    setTimeout(function() { speakDarami('소릿값은 ' + item.phon + '!'); }, 3500);
+  }
 }
 
 // === GUIDED 단계: 획순 애니메이션 ===

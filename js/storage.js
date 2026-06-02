@@ -101,7 +101,7 @@ function recordResult(itemId, isCorrect, stars) {
     p.passed = true;
     p.lastPassedAt = Date.now();
     // 간격 반복 레벨업: 정답 시 다음 복습 간격 늘림 (Leitner 박스)
-    p.reviewLevel = Math.min(5, (p.reviewLevel || 0) + 1);
+    p.reviewLevel = Math.min(6, (p.reviewLevel || 0) + 1);
     if (stars > prevStars) {
       d.stars += (stars - prevStars);
       p.bestStars = stars;
@@ -116,14 +116,16 @@ function recordResult(itemId, isCorrect, stars) {
   return p;
 }
 
-// 간격 반복 — Leitner 박스 (레벨별 복습 주기 시간)
+// 간격 반복 — 6세 발달에 맞춘 Leitner 박스 (성인 SRS보다 짧음)
+// 6세는 망각이 가파르고 일일 노출이 효과적이라 초기 간격을 분 단위로 시작
 var REVIEW_INTERVALS_MS = [
   0,                        // 레벨 0: 즉시
-  10 * 60 * 1000,           // 레벨 1: 10분
-  24 * 60 * 60 * 1000,      // 레벨 2: 1일
-  3 * 24 * 60 * 60 * 1000,  // 레벨 3: 3일
-  7 * 24 * 60 * 60 * 1000,  // 레벨 4: 7일
-  14 * 24 * 60 * 60 * 1000, // 레벨 5: 14일
+  5 * 60 * 1000,            // 레벨 1: 5분 (세션 내 재노출)
+  30 * 60 * 1000,           // 레벨 2: 30분 (당일 재방문 유도)
+  24 * 60 * 60 * 1000,      // 레벨 3: 1일
+  2 * 24 * 60 * 60 * 1000,  // 레벨 4: 2일
+  4 * 24 * 60 * 60 * 1000,  // 레벨 5: 4일
+  7 * 24 * 60 * 60 * 1000,  // 레벨 6: 7일 (완전 정착)
 ];
 
 // 복습 대상 글자 모으기 (간격이 지난 통과 항목 + 미통과 실패 항목)

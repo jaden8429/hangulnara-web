@@ -2,6 +2,17 @@
 
 var USER_NAME = '서연';  // 보호자 모드에서 변경 가능
 
+// 자음 음가(소릿값) 매핑 — "기역" 같은 이름과 별개로 [그] 발음 학습용
+// 합성 챕터에서 ㄱ + ㅏ = 가를 직관적으로 가르치기 위해 필요
+var CONSONANT_PHON = {
+  'ㄱ':'그','ㄴ':'느','ㄷ':'드','ㄹ':'르','ㅁ':'므',
+  'ㅂ':'브','ㅅ':'스','ㅇ':'으','ㅈ':'즈','ㅊ':'츠',
+  'ㅋ':'크','ㅌ':'트','ㅍ':'프','ㅎ':'흐',
+  'ㄲ':'끄','ㄸ':'뜨','ㅃ':'쁘','ㅆ':'쓰','ㅉ':'쯔',
+};
+function phonOf(jamo) { return CONSONANT_PHON[jamo] || jamo; }
+
+
 const CHAPTERS = [
   { id:'prep', title:'준비', emoji:'✏️', order:0, unlock:'none',
     lessons:['prep_lines','prep_circles'] },
@@ -11,10 +22,11 @@ const CHAPTERS = [
     lessons:['vowel_set_1','vowel_set_2'] },
   { id:'stage2', title:'쉬운 음절', emoji:'가', order:3, unlock:'chapter_complete:stage1_vowels',
     lessons:['syllable_set_ga','syllable_set_na','syllable_set_da'] },
-  { id:'stage2_diphthong', title:'이중모음', emoji:'ㅐ', order:4, unlock:'chapter_complete:stage2',
-    lessons:['diphthong_set_1','diphthong_set_2'] },
-  { id:'stage3_batchim', title:'받침 글자', emoji:'곰', order:5, unlock:'chapter_complete:stage2_diphthong',
+  // 누리과정 표준: 받침을 먼저, 이중모음은 음운적으로 더 어려우므로 뒤에
+  { id:'stage3_batchim', title:'받침 글자', emoji:'곰', order:4, unlock:'chapter_complete:stage2',
     lessons:['batchim_set_n','batchim_set_m','batchim_set_l'] },
+  { id:'stage2_diphthong', title:'이중모음', emoji:'ㅐ', order:5, unlock:'chapter_complete:stage3_batchim',
+    lessons:['diphthong_set_1','diphthong_set_2'] },
 ];
 
 const LESSONS = {
@@ -29,24 +41,24 @@ const LESSONS = {
     { id:'prep_sp', char:'🌀', name:'나선', type:'PREP', tts:'빙글빙글 그려보자' },
   ]},
   consonant_set_1: { title:'ㄱ ㄴ ㄷ ㄹ ㅁ', threshold:4, items:[
-    { id:'c_g', char:'ㄱ', name:'기역', type:'CHAR', tts:'기역', word:'기차', emoji:'🚂' },
-    { id:'c_n', char:'ㄴ', name:'니은', type:'CHAR', tts:'니은', word:'나비', emoji:'🦋' },
-    { id:'c_d', char:'ㄷ', name:'디귿', type:'CHAR', tts:'디귿', word:'다리', emoji:'🌉' },
-    { id:'c_r', char:'ㄹ', name:'리을', type:'CHAR', tts:'리을', word:'라면', emoji:'🍜' },
-    { id:'c_m', char:'ㅁ', name:'미음', type:'CHAR', tts:'미음', word:'모자', emoji:'🧢' },
+    { id:'c_g', char:'ㄱ', name:'기역', phon:'그', type:'CHAR', tts:'기역', word:'기차', emoji:'🚂' },
+    { id:'c_n', char:'ㄴ', name:'니은', phon:'느', type:'CHAR', tts:'니은', word:'나비', emoji:'🦋' },
+    { id:'c_d', char:'ㄷ', name:'디귿', phon:'드', type:'CHAR', tts:'디귿', word:'다리', emoji:'🌉' },
+    { id:'c_r', char:'ㄹ', name:'리을', phon:'르', type:'CHAR', tts:'리을', word:'라면', emoji:'🍜' },
+    { id:'c_m', char:'ㅁ', name:'미음', phon:'므', type:'CHAR', tts:'미음', word:'모자', emoji:'🧢' },
   ]},
   consonant_set_2: { title:'ㅂ ㅅ ㅇ ㅈ ㅊ', threshold:4, items:[
-    { id:'c_b', char:'ㅂ', name:'비읍', type:'CHAR', tts:'비읍', word:'바다', emoji:'🌊' },
-    { id:'c_s', char:'ㅅ', name:'시옷', type:'CHAR', tts:'시옷', word:'사자', emoji:'🦁' },
-    { id:'c_ng', char:'ㅇ', name:'이응', type:'CHAR', tts:'이응', word:'오리', emoji:'🦆' },
-    { id:'c_j', char:'ㅈ', name:'지읒', type:'CHAR', tts:'지읒', word:'자동차', emoji:'🚗' },
-    { id:'c_ch', char:'ㅊ', name:'치읓', type:'CHAR', tts:'치읓', word:'치마', emoji:'👗' },
+    { id:'c_b', char:'ㅂ', name:'비읍', phon:'브', type:'CHAR', tts:'비읍', word:'바다', emoji:'🌊' },
+    { id:'c_s', char:'ㅅ', name:'시옷', phon:'스', type:'CHAR', tts:'시옷', word:'사자', emoji:'🦁' },
+    { id:'c_ng', char:'ㅇ', name:'이응', phon:'으', type:'CHAR', tts:'이응', word:'오리', emoji:'🦆' },
+    { id:'c_j', char:'ㅈ', name:'지읒', phon:'즈', type:'CHAR', tts:'지읒', word:'자동차', emoji:'🚗' },
+    { id:'c_ch', char:'ㅊ', name:'치읓', phon:'츠', type:'CHAR', tts:'치읓', word:'치마', emoji:'👗' },
   ]},
   consonant_set_3: { title:'ㅋ ㅌ ㅍ ㅎ', threshold:3, items:[
-    { id:'c_k', char:'ㅋ', name:'키읔', type:'CHAR', tts:'키읔', word:'코', emoji:'👃' },
-    { id:'c_t', char:'ㅌ', name:'티읕', type:'CHAR', tts:'티읕', word:'토끼', emoji:'🐰' },
-    { id:'c_p', char:'ㅍ', name:'피읖', type:'CHAR', tts:'피읖', word:'포도', emoji:'🍇' },
-    { id:'c_h', char:'ㅎ', name:'히읗', type:'CHAR', tts:'히읗', word:'하마', emoji:'🦛' },
+    { id:'c_k', char:'ㅋ', name:'키읔', phon:'크', type:'CHAR', tts:'키읔', word:'코', emoji:'👃' },
+    { id:'c_t', char:'ㅌ', name:'티읕', phon:'트', type:'CHAR', tts:'티읕', word:'토끼', emoji:'🐰' },
+    { id:'c_p', char:'ㅍ', name:'피읖', phon:'프', type:'CHAR', tts:'피읖', word:'포도', emoji:'🍇' },
+    { id:'c_h', char:'ㅎ', name:'히읗', phon:'흐', type:'CHAR', tts:'히읗', word:'하마', emoji:'🦛' },
   ]},
   vowel_set_1: { title:'ㅏ ㅑ ㅓ ㅕ ㅗ', threshold:4, items:[
     { id:'v_a', char:'ㅏ', name:'아', type:'CHAR', tts:'아' },

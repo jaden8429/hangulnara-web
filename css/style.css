@@ -402,11 +402,17 @@ body {
   background: #F0EDE8;
 }
 .chapter-card.locked .name { color: var(--text2); }
+/* 잠금 자물쇠 — 우상단 뱃지 (이모지 가리지 않음) */
+.chapter-card { position: relative; }
 .chapter-card .lock-overlay {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 56px; opacity: 0.7;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  position: absolute; top: 10px; right: 10px;
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  z-index: 2;
 }
 .lock-hint {
   font-size: 13px; color: var(--text2);
@@ -453,15 +459,34 @@ body {
   box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.compose-pair.compose-animating .compose-jamo {
-  animation: mergeIn 0.8s ease forwards;
+/* COMBINE 단계 — 자모가 실제로 중앙을 향해 미끄러져 합쳐지는 시각화 */
+.compose-pair.compose-animating {
+  position: relative;
+  display: flex;
+  justify-content: center; align-items: center;
+  gap: 8px;
+  min-height: 140px;
 }
-.compose-merge-left { animation-delay: 0s; }
-.compose-merge-right { animation-delay: 0.2s; }
-@keyframes mergeIn {
-  0% { transform: translateX(0) scale(1); opacity: 1; }
-  60% { transform: translateX(0) scale(0.7); opacity: 0.6; }
-  100% { transform: translateX(0) scale(0.5); opacity: 0; }
+.compose-pair.compose-animating .compose-jamo,
+.compose-pair.compose-animating .compose-result-big {
+  animation-fill-mode: forwards;
+}
+.compose-merge-left {
+  animation: mergeFromLeft 1.0s cubic-bezier(0.55, 0.06, 0.45, 1) forwards;
+}
+.compose-merge-right {
+  animation: mergeFromRight 1.0s cubic-bezier(0.55, 0.06, 0.45, 1) forwards;
+  animation-delay: 0.1s;
+}
+@keyframes mergeFromLeft {
+  0%   { transform: translateX(-80px) scale(1); opacity: 1; }
+  60%  { transform: translateX(20px) scale(0.85); opacity: 0.7; }
+  100% { transform: translateX(60px) scale(0.5); opacity: 0; }
+}
+@keyframes mergeFromRight {
+  0%   { transform: translateX(80px) scale(1); opacity: 1; }
+  60%  { transform: translateX(-20px) scale(0.85); opacity: 0.7; }
+  100% { transform: translateX(-60px) scale(0.5); opacity: 0; }
 }
 .compose-choices {
   display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
@@ -545,4 +570,65 @@ body {
 }
 .profile-chip.add {
   border-style: dashed; color: var(--text2);
+}
+
+/* 받침 합성 시각화 */
+.compose-jamo.orange { background: var(--orange); }
+.compose-batchim { position: relative; }
+.compose-batchim-label {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  background: var(--orange); color: white; font-size: 11px; font-weight: bold;
+  padding: 2px 8px; border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+/* 받침 슬라이드인 (아래에서 위로 붙음) */
+.compose-pair.has-batchim {
+  position: relative;
+}
+.compose-merge-bottom {
+  animation: mergeFromBottom 0.9s ease forwards;
+  animation-delay: 0.4s;
+}
+@keyframes mergeFromBottom {
+  0% { transform: translateY(120px) scale(1); opacity: 1; }
+  60% { transform: translateY(0) scale(0.7); opacity: 0.6; }
+  100% { transform: translateY(0) scale(0.5); opacity: 0; }
+}
+.compose-result-pop {
+  animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-delay: 0.8s;
+  animation-fill-mode: backwards;
+}
+
+/* 음가 (소릿값) 표시 */
+.learn-phon {
+  font-size: 18px; color: var(--orange); font-weight: bold;
+  background: rgba(255,190,118,0.18);
+  padding: 4px 14px; border-radius: 12px;
+  margin-top: 4px;
+}
+
+/* 챕터 화면 안의 테마학습 카드 (홈 통합) */
+.chapter-card.chapter-theme {
+  background: linear-gradient(135deg, #FFE8C8 0%, #FFC9D2 100%);
+  border: 2px dashed var(--orange);
+}
+.chapter-card.chapter-theme .name { color: var(--text); }
+
+/* 홈 어댑티브 추천 배너 */
+.home-recommend {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFE5E5 100%);
+  border-radius: 18px;
+  padding: 10px 18px;
+  font-size: 17px; font-weight: bold; color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 540px;
+  min-height: 36px;
+}
+.home-recommend:empty { display: none; }
+.home-recommend .recommend-go {
+  min-width: auto; min-height: 40px;
+  padding: 8px 18px; font-size: 16px;
+  margin-left: auto;
 }
