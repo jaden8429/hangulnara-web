@@ -19,7 +19,15 @@ function playAudio(text, fallbackRate, fallbackPitch) {
   var d = loadData();
   if (!d.settings.tts) return;
   stopAudio();
-  var src = (typeof AUDIO_MAP !== 'undefined') ? AUDIO_MAP[text] : null;
+  // 원본 → 정리본 순으로 캐시 조회 (특수기호 유무 양쪽 모두 대응)
+  var src = null;
+  if (typeof AUDIO_MAP !== 'undefined') {
+    src = AUDIO_MAP[text];
+    if (!src) {
+      var clean = sanitizeForTTS(text);
+      if (clean && clean !== text) src = AUDIO_MAP[clean];
+    }
+  }
   if (src) {
     currentAudio = new Audio(src);
     currentAudio.play().catch(function() { fallbackTTS(text, fallbackRate, fallbackPitch); });
@@ -27,10 +35,25 @@ function playAudio(text, fallbackRate, fallbackPitch) {
     fallbackTTS(text, fallbackRate, fallbackPitch);
   }
 }
+// 특수기호를 TTS가 글자로 읽지 않도록 정리 (Web Speech 폴백 전용)
+// 미리 생성한 Neural TTS mp3는 영향 받지 않음
+function sanitizeForTTS(text) {
+  return text
+    .replace(/~+/g, '')                       // 물결표(틸드) — "물결" 발음 방지
+    .replace(/!{2,}/g, '!')                    // 연속 ! 1개로
+    .replace(/\?{2,}/g, '?')
+    .replace(/\.{3,}/g, '.')
+    .replace(/[♥♡★☆※◎○●◇◆□■△▲▽▼]/g, '')   // 장식 기호
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, '') // 이모지/기호
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 function fallbackTTS(text, rate, pitch) {
   if (!tts) return;
   tts.cancel();
-  var u = new SpeechSynthesisUtterance(text);
+  var clean = sanitizeForTTS(text);
+  if (!clean) return; // 비어있으면 발음 생략
+  var u = new SpeechSynthesisUtterance(clean);
   u.lang = 'ko-KR'; u.rate = rate; u.pitch = pitch; u.volume = 1.0;
   tts.speak(u);
 }
